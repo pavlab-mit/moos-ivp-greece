@@ -11,8 +11,8 @@ How to set up and bind the RadioLink AT9S Pro transmitter and R9DS receiver to
 the BlueBoat, including the SBUS wiring to the Navigator hat, the throttle
 spring-return modification, and verification against the `iRCReader` MOOS app.
 
-For deep `iRCReader` / SBUS-protocol / connection-state detail, see
-[`ATS9Pro.md`](ATS9Pro.md).
+For deep `iRCReader` / SBUS internals, the source of truth is the code:
+`moos-ivp-blueboat/src/iRCReader/` and `src/01_libraries/lib_sbus/`.
 
 ---
 
@@ -187,18 +187,15 @@ flipping with the MODE switch.
 
 Switch labels and channel mapping are confirmed (§3.2). Remaining open items:
 
-- [ ] Confirm the MODE switch (SWA) orientation — which position is RC and
-      which is autonomy.
+- [ ] Document the MODE switch (SWA) orientation — out / up = autonomy in/down = manual
 - [ ] Assign functions to the reserved switches (SWE/SWB/SWC/SWD) if/when the
       software starts consuming them; update §3.2 when it does.
-- [ ] Confirm whether CH2 / CH4 sticks are intentionally unused.
 
 ## 11. Change Log
 
 Append-only log of changes to this procedure. One line per change: date —
 change — author.
 
-- 2026-06-02 — Initial draft from `ATS9Pro.md`, Greece-only. Channel map
-  reworked to a function + hardware-label naming scheme; CH6=MODE filled,
-  remaining switch functions/labels/positions flagged in §10. Deep iRCReader /
-  SBUS detail left in `ATS9Pro.md` and linked. — JWenger
+- 2026-06-02 — Initial draft (Greece-only) from the legacy AT9S Pro guide.
+  Channel map reworked to a function + hardware-label naming scheme; CH6=MODE
+  filled, remaining switch functions/labels/positions flagged in §10. — JWenger

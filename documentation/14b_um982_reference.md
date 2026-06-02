@@ -1,4 +1,15 @@
-# UM982 Configuration Recommendations for BlueBoat
+---
+status: draft
+applies_to: Unicore UM982 on ArduSimple simpleRTK3B Compass (config reference)
+last_updated: 2026-06-02
+owner: TBD
+---
+
+# UM982 Configuration Reference
+
+> **Companion to** [`14_um982_gps.md`](14_um982_gps.md). This is the deep
+> reference — full message field tables, parser notes, and the rationale behind
+> the configuration. For the Greece connect-and-configure procedure, use `14`.
 
 ## Context
 
