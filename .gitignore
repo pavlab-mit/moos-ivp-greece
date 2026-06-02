@@ -58,11 +58,15 @@ Log*/
 XLog*/
 
 # Build dirs
-build/
-Build/
+build/*
+Build/*
+!build/
+!build/.gitignore
 build-*/
-bin/
-lib/
+bin/*
+!bin/.gitignore
+lib/*
+!lib/.gitignore
 
 # CMake generated files
 CMakeFiles/
