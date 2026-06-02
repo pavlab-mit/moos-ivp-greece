@@ -125,9 +125,18 @@ use a `> **Lab note.**` callout and keep it short.
 
 ## 10. Diagrams
 
-ASCII-art diagrams are fine and preferred for portability. If a diagram needs
-maintenance, prefer a Mermaid block (` ```mermaid `) over a hand-drawn box
-diagram so future edits don't require pixel-pushing.
+Use whatever diagramming approach communicates the idea most clearly — there
+is no required format. Options include:
+
+- **ASCII-art** — fine for quick, simple sketches inline in the text.
+- **Mermaid** (` ```mermaid ` block) — text that renders as a diagram on
+  GitHub and most Markdown viewers; good when a diagram will be edited over
+  time, since the source is plain text.
+- **Images / SVG** — committed image files are encouraged where a photo or a
+  proper drawing communicates better than text can.
+
+Pick the format that fits the diagram. Whatever the format, keep the source
+(or the original file) in the repo so the diagram can be updated later.
 
 ## 11. Status Discipline
 
