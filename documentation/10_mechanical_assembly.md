@@ -1,5 +1,5 @@
 ---
-status: stub
+status: draft
 applies_to: Greece BlueBoat fleet (2026)
 last_updated: 2026-06-02
 owner: TBD
@@ -10,115 +10,152 @@ owner: TBD
 How to assemble a Greece BlueBoat from kit to a structurally complete vehicle
 ready for electrical wiring (`11_electrical_wiring.md`).
 
-> **Status: stub.** Build content to be lifted from `QC_Build_Checklist.md`
-> (mechanical section), expanded into step-by-step instructions, with the
-> checkbox items moved to `20_qc_signoff.md`.
-
 ---
 
 ## 1. Overview
-_To do._
 
-What this guide produces: a fully assembled hull with all rails, mounts, and
-passthroughs installed and sealed. No electronics yet — that's §3.
+This guide takes a BlueBoat from kit parts to a structurally complete hull:
+cross bars, cross tube, props, rails and plates, sensor and radio mounts, and
+all bulkhead passthroughs installed and sealed. It stops short of any
+electrical work — no wiring, termination, or power-on happens here. When this
+guide is complete the boat is mechanically finished and ready for
+`11_electrical_wiring.md`.
+
+It is written for the person building a boat at the bench. Verification
+criteria appear in §8; the formal sign-off checkboxes live in
+[`20_qc_signoff.md`](20_qc_signoff.md).
 
 ## 2. Prerequisites
-_To do._
 
-Tools (allen keys, torque driver, RTV, dielectric grease, molycoat), parts
-inventory (cross bars, cross tube, props, 8020 rails, end caps, PABLO plate,
-GPS antenna mounts, E-stop, DoodleLabs adapter plate + heat sink + buck
-converter, Unicore module). Reference part numbers / source.
+**Tools.** Allen keys, a torque driver, RTV sealant, dielectric grease, and
+molycoat (anti-seize).
+
+**Parts.** Black cross bars, cross tube, propellers, 8020 rails and end caps,
+PABLO plate, GPS antenna mounts, E-stop, the DoodleLabs adapter plate with
+heat sink and buck converter, the Unicore (UM982) module, identification
+stickers, and battery velcro.
+
+Confirm the full kit is present against the parts inventory before starting.
+Specific part numbers, sources, and torque values are collected in §10.
 
 ## 3. Context
 
 ### 3.1 Why Sealing and Strain Relief Matter
-_To do._
 
-Brief on the operating environment (salt water, sun, handling). Why
-molycoat + dielectric grease on passthroughs, why RTV on E-stop, why velcro
-on batteries.
+These boats operate in salt water, under sun, and are not handled gently in
+transport or launch. Every fastener and passthrough is a potential ingress
+point, so passthroughs are coated with molycoat (to prevent galling and to
+seal the threads) and exposed contacts get a light layer of dielectric grease
+(to resist corrosion). The E-stop is sealed internally with RTV plus
+dielectric grease because it sits exposed at the stern. Batteries are held
+with velcro so they cannot shift under wave loading yet remain serviceable.
+Assume anything not positively secured will eventually work loose.
 
 ### 3.2 Passthrough Layout
-_To do._
 
-Top-down diagram of the boat showing M14 and M10 passthrough positions,
-labeled by what cable goes through each.
+The hull has four M14 passthroughs (one at each corner) and two banks of M10
+passthroughs (port and starboard). Each carries a specific cable; the full
+assignment is in §7. A labeled top-down photo of the as-built passthrough
+layout should be added here (see §10).
 
-## 4. Hull and Default Configuration
-_To do._
+## 4. Hull and Default Configuration (Blue Robotics Build Guide)
 
-Step-by-step:
-
-1. Secure black cross bars to specified torque.
-2. Install and seal cross tube.
-3. Install props.
-4. Apply identification stickers.
-5. Velcro the battery mounts.
+1. Secure the black cross bars.
+2. Install the cross tube and seal it.
+3. Screw on the propellers and confirm they are fully seated and secure.
+4. Apply the identification stickers.
+5. Attach the velcro for the battery mounts.
 
 ## 5. Rails and Plates
-_To do._
 
-Step-by-step:
-
-1. Mount 8020 rails with bushings.
-2. Install 8020 endcaps.
-3. Install PABLO plate.
+1. Mount the 8020 rails with their bushings and confirm they are secure.
+2. Install the 8020 end caps.
+3. Install the PABLO plate.
 
 ## 6. Sensor and Radio Mounts
-_To do._
 
-Step-by-step:
-
-1. Secure GPS antenna mounts (port side).
-2. Install E-stop (starboard rear), seal internally with RTV + dielectric
-   grease.
-3. Install DoodleLabs radio on adapter plate with heat sink and buck
-   converter.
-4. Install Unicore module so it cannot shift.
+1. Secure the GPS antenna mounts on the port side.
+2. Install the E-stop at the starboard rear and seal it internally with RTV
+   and dielectric grease.
+3. Install the DoodleLabs radio on its adapter plate together with the heat
+   sink and buck converter.
+4. Install the Unicore (UM982) module so that it cannot shift.
 
 ## 7. Passthroughs
-_To do._
 
-For each passthrough position, what cable it carries, target torque, and the
-seal procedure (molycoat + dielectric grease).
+Every passthrough must be tight and secure, coated with a healthy amount of
+molycoat. Add a light layer of dielectric grease to any exposed contacts.
 
 ### 7.1 Front-Right M14 — 60″ Coax / N-type
-_To do._
+
+Carries the 60″ coax (N-type). Seat, torque, molycoat, and grease the exposed
+contact.
 
 ### 7.2 Rear-Right M14 — Nav Light
-_To do._
+
+Carries the nav light cable. Seat, torque, molycoat.
 
 ### 7.3 Front-Left M14 — Potted GPS Passthrough
-_To do._
+
+The potted GPS passthrough. Seat and torque; do not disturb the potting.
 
 ### 7.4 Rear-Left M14 — 12/24″ Coax / N-type
-_To do._
+
+Carries the 12/24″ coax (N-type). Seat, torque, molycoat, and grease the
+exposed contact.
 
 ### 7.5 Right M10s
-_To do._
 
-Front: payload power #1 (3-pin power). Right: on/off switch. Rear: E-stop
-(3-pin signal). Left: PABLO Ethernet (8-pin).
+| Position | Carries | Connector |
+|---|---|---|
+| Front | Payload power #1 | 3-pin power |
+| Right | On/off switch | — |
+| Rear | E-stop | 3-pin signal |
+| Left | PABLO Ethernet | 8-pin |
 
 ### 7.6 Left M10s
-_To do._
 
-Front: payload power #1 (3-pin power). Right: battery balance lead (8-pin).
-Rear: blank. Left: blank.
+| Position | Carries | Connector |
+|---|---|---|
+| Front | Payload power #1 | 3-pin power |
+| Right | Battery balance lead | 8-pin |
+| Rear | Blank | — |
+| Left | Blank | — |
 
 ## 8. Verification
-_To do._
 
-What to check before moving to electrical:
+Before moving to electrical wiring, confirm:
 
 - All fasteners torqued to spec.
 - All passthroughs seated and sealed.
-- E-stop test fit (mechanical only; full electrical test in §3).
-- No play in radio / Unicore mounts.
+- E-stop test-fit (mechanical only; the full electrical test is in
+  `11_electrical_wiring.md`).
+- No play in the radio or Unicore mounts.
 
 ## 9. Troubleshooting
-_To do._
 
-Common assembly issues (cross tube not sealing, passthrough cross-threaded,
-rail bushings missing).
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Hulls wont remain vertical | tension on cam clamps not set correctly | tighten the backing nut on the cam clamps, re-tighten set screw |
+| Passthrough spins when attaching cable | passthro was not appropriately tightened | Back out, inspect threads, and seal, tighten appropriately |
+
+## 10. Needs from Builder
+
+Open items that only the person building the boat can supply. Fill these in as
+the build is documented:
+
+- [ ] Part numbers and sources for all kit parts (§2).
+- [ ] Specific RTV / dielectric grease / molycoat products used.
+- [ ] Labeled top-down passthrough-layout photo or diagram (§3.2).
+- [ ] As-built photos for the key assembly steps (cross tube seal, E-stop
+      sealing, radio/Unicore mounts, passthroughs).
+- [ ] Confirm the "battery balance lead" assignment on the Left M10 Right
+      position (carried over from the checklist with a query).
+
+## 11. Change Log
+
+Append-only log of changes to this procedure. One line per change: date —
+change — author.
+
+- 2026-06-02 — Initial draft; mechanical steps converted to prose from
+  `QC_Build_Checklist.md`, open items collected in §10. — JWenger
