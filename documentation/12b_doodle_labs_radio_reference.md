@@ -1,4 +1,18 @@
-# PAVLAB Doodle Labs Mesh Rider Radio Guide
+---
+status: draft
+applies_to: DoodleLabs Mesh Rider radios (vendor hardware/API reference)
+last_updated: 2026-06-02
+owner: JWenger
+---
+
+# DoodleLabs Mesh Rider Radio Reference
+
+> **Companion to** [`12_doodle_labs_radio.md`](12_doodle_labs_radio.md). This
+> is the deep vendor reference (full pinouts, LED/button tables, JSON-RPC /
+> UCI / GPS API). For the Greece connect-and-configure procedure, use `12`.
+> Content below is still PAVLAB-flavored and pending a Greece pass — treat the
+> `pavlab` mesh ID, `hovergroup` password, and `192.168.1.130` shore address as
+> lab examples, not Greece values.
 
 > **Radios covered:** Wearable (RM-1700-22W3) · Mini-OEM (RM-1700-22M3)
 > **Web GUI version observed:** MeshRider Web 3.1.0
