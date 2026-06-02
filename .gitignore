@@ -93,3 +93,10 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+
+## 3 - Secrets
+
+# Resolved credentials referenced by the documentation. The template
+# (00_secrets.template.md) is checked in; the real file is not.
+documentation/00_secrets.md

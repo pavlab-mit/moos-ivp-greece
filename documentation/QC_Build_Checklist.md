@@ -1,0 +1,84 @@
+This document will serve as a guide for what must be confirmed for each blueboat before they are deployed on the water for preliminary testing. This will cover both mechanical, electrical, and sofware checks. 
+
+mechanical:
+- default config
+    - are the black cross bars secured tightly
+    - is the cross tube secured and sealed
+    - are the props screwed on securely
+    - are the stickers installed
+    - do the batteries have velcro
+- mounting
+    - are the 8020 rails mounted with bushings and secure
+    - are the 8020 endcaps installed
+    - is the PABLO plate installed
+    - are the GPS antenna mounts secured on the port side of the boat
+    - is the E-stop installed and secure on the starboard rear of the boat
+        - was it internally sealed with RTV and dialectric grease
+    - is the doodle labs radio installed on its adapter plate with a heat sink and buck converter
+    - is the unicore module installed and unable to move
+- passthroughs: these must all be tight / secure and coated with a health amount of molycoat. it also would be good to add a light layer of dialectric grease to any exposed contacts
+    - front right m14: 60" coax / n-type
+    - rear right m14: nav light
+    - front left m14: potted gps passthrough
+    - rear left m14: 12/24" coax / ntype
+
+    - right m10s:
+        - front: payload power #1 (3 pin power) 
+        - right: on/off switch
+        - rear: e-stop (3 pin signal)
+        - left: pablo ethernet (8 pin)
+    - left m10s:
+        - front: payload power #1 (3 pin power)
+        - right: battery balance lead? (8 pin)
+        - rear: blank
+        - left: blank
+    
+electrical: it is good practice to ensure good, clean cable management, as well as strain relief on cables where at all possible. assume these boats will not be handled gently
+- safety
+    - is the 3 pin signal cable appropriately connected to the contact block? are the specified pins an NC contact
+    - was the 3 pin signal bulkhead spliced into the blue power wire such that the switches are in series (boat should not power on without an e-stop connected)
+    - is the blue switch connector (2 pin jst) securely connected to the main power contactor
+    - are all solder joints properly sealed with heat shrink
+- power delivery
+    - is payload power 1 (3 pin power) properly terminated as an xt60 using the black and red wires
+    - is payload power 2 (3 pin power) properly terminated as an xt60 using the black and red wires
+    - is the xt60 y splitter installed for the starboard pontoon and connected to payload power 1
+    - is the xt60 y splitter installed for the port pontoon and connected to payload power 2
+    - is the 5v buck converter for the doodle labs wired with a 2a fuse to battery voltage
+    - is the 5v buck converter appropriately wired into the doodle labs evk board
+- data
+    - is the 6ft ethernet cable fed throgh the cross tube and securely connected to the dl evk board
+    - are both antennas securely connected to the dl push to connect ports, is there sufficient strain relief
+    - are both antennas securely connected to the n-type connectors, ensure antennas are always fully connected before powering on
+    - is the usb -> ethernet adapter connected to the 6ft ethernet cable, wrapped in e-tape, and conencted to the upper usb3.0 port
+    - is the usb 3.0 cable fed through the cross tube, connected to the UM982 data port, and the lower usb 3.0 port
+    - are antenna 1 and 2 labeled for the UM982? are they securely connected to the appropriate SMA ports
+    - is the 8pin ethernet port properly terminated as an rj45, did it pass a connectivity test, was it connected to the main ethernet port on the navigator
+    - was the bulgin -> blue trail ethernet cable properly spliced using waterproof heat shrink, did it pass a connectivity test
+
+software
+- image 
+    - was the image installed per the first time startup guide
+    - was the hostname correctly set
+    - does the boat boot
+- networking
+    - was the network configured per the first time startup guide
+    - what is the boat ID#, vname, and radio specific ip address / mac address, were they stored in the spreadsheet
+    - can the boat reach the internet
+    - is a device connected to the ethernet port assigned the correct ip address, can said device reach the internet
+- gps
+    - was the GPS configured per the gps guide
+    - does the applet produce a clean fix for position and heading, does heading and velocity change if the boat is moved
+- radio
+    - was the radio configured per the DL guide
+    - was the firmware updated
+    - does the radio have .2.3 ip address
+    - can the shoreside radio see the mac address of the radio
+- autonomy
+    - were the repositories pulled and rebuilt
+    - were the auto launch scripts installed per the guide
+    - does the boat auto launch when flat, does it go idle when raised
+    - were the IMU and magnetomerter calibrated
+    - were the calibration files stored in the correct locations
+    - does the fs mission launch without warnings / errors
+    - is the community named correctly
