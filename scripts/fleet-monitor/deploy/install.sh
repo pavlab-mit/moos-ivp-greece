@@ -100,7 +100,11 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable --now fleet-collector.service fleet-dashboard.service
+systemctl enable fleet-collector.service fleet-dashboard.service
+# restart (not just `enable --now`): on a re-run the services are already
+# active, and `--now` would NOT restart them -- so a changed port/ExecStart
+# would never take effect. An explicit restart always applies the new unit.
+systemctl restart fleet-collector.service fleet-dashboard.service
 
 echo
 echo "Done. Both services are enabled (start on boot) and running now."
