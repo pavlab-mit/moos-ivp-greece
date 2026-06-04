@@ -65,8 +65,8 @@ read-time. No real password ever appears in a committed file.
 
 | Key | Used in | Description | Value |
 |---|---|---|---|
-| `MOOS_IVP_BLUEBOAT_DEPLOY_KEY` | `16_software_build.md` | Per-boat SSH deploy key for `moos-ivp-blueboat`. Stored as a private/public pair; the public half is added as a deploy key in the repo. | _(populate in 00_secrets.md)_ |
-| `MOOS_IVP_GREECE_DEPLOY_KEY` | `16_software_build.md` | Per-boat SSH deploy key for `moos-ivp-greece`. | _(populate in 00_secrets.md)_ |
+| `MOOS_IVP_BLUEBOAT_DEPLOY_KEY` | `16_software_build.md` | Fleet-wide, read-only SSH deploy key for `moos-ivp-blueboat` (one per repo, shared across all boats — not per-boat). Stored as a private/public pair; the public half is added read-only to the repo's Deploy keys, the private half goes on every boat. | _(populate in 00_secrets.md)_ |
+| `MOOS_IVP_GREECE_DEPLOY_KEY` | `16_software_build.md` | Fleet-wide, read-only SSH deploy key for `moos-ivp-greece` (one per repo, shared across all boats — not per-boat). | _(populate in 00_secrets.md)_ |
 
 ## 6. NTRIP / GPS Corrections (Future)
 
