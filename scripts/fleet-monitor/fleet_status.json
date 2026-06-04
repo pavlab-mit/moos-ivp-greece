@@ -1,0 +1,151 @@
+{
+  "ts": 1780594338.910744,
+  "iso": "13:32:18",
+  "shore_radio": {
+    "ip": "192.168.1.130",
+    "alive": true,
+    "rtt_ms": 3.792,
+    "avg_rtt_ms": 4.1,
+    "loss_pct": 0.0
+  },
+  "shore_ok": true,
+  "telemetry_port": 9300,
+  "telemetry_count": 1,
+  "boats": [
+    {
+      "name": "wes",
+      "id": null,
+      "state": "frontseat_only",
+      "fault_at": "backseat",
+      "rungs": {
+        "uplink": {
+          "ip": "192.168.1.134",
+          "alive": true,
+          "rtt_ms": 6.584,
+          "avg_rtt_ms": 7.4,
+          "loss_pct": 0.0
+        },
+        "frontseat": {
+          "ip": "10.34.1.1",
+          "alive": true,
+          "rtt_ms": 6.873,
+          "avg_rtt_ms": 7.3,
+          "loss_pct": 0.0
+        },
+        "backseat": {
+          "ip": "10.34.1.100",
+          "alive": false,
+          "rtt_ms": null,
+          "avg_rtt_ms": null,
+          "loss_pct": 100.0
+        }
+      },
+      "last_present_ts": null,
+      "last_present_iso": null,
+      "telemetry": null
+    },
+    {
+      "name": "via",
+      "id": null,
+      "state": "offline",
+      "fault_at": "uplink",
+      "rungs": {
+        "uplink": {
+          "ip": "192.168.1.135",
+          "alive": false,
+          "rtt_ms": null,
+          "avg_rtt_ms": null,
+          "loss_pct": 100.0
+        },
+        "frontseat": {
+          "ip": "10.35.1.1",
+          "alive": false,
+          "rtt_ms": null,
+          "avg_rtt_ms": null,
+          "loss_pct": 100.0
+        },
+        "backseat": {
+          "ip": "10.35.1.100",
+          "alive": false,
+          "rtt_ms": null,
+          "avg_rtt_ms": null,
+          "loss_pct": 100.0
+        }
+      },
+      "last_present_ts": null,
+      "last_present_iso": null,
+      "telemetry": null
+    },
+    {
+      "name": "yip",
+      "id": null,
+      "state": "present",
+      "fault_at": null,
+      "rungs": {
+        "uplink": {
+          "ip": "192.168.1.132",
+          "alive": true,
+          "rtt_ms": 5.441,
+          "avg_rtt_ms": 5.3,
+          "loss_pct": 0.0
+        },
+        "frontseat": {
+          "ip": "10.32.1.1",
+          "alive": true,
+          "rtt_ms": 5.174,
+          "avg_rtt_ms": 5.3,
+          "loss_pct": 0.0
+        },
+        "backseat": {
+          "ip": "10.32.1.100",
+          "alive": true,
+          "rtt_ms": 5.219,
+          "avg_rtt_ms": 5.3,
+          "loss_pct": 0.0
+        }
+      },
+      "last_present_ts": 1780594338.910744,
+      "last_present_iso": "13:32:18",
+      "telemetry": {
+        "received_ts": 1780594338.756415,
+        "received_iso": "13:32:18",
+        "age_s": 0.2,
+        "fresh": true,
+        "src_ip": "192.168.1.132",
+        "matched": true,
+        "fields": {
+          "vname": "yip_fs",
+          "utc": "1780594338.75",
+          "mode": "NO_HELM",
+          "mission": "false",
+          "helm": "NONE",
+          "deploy": "false",
+          "volt": "15.3",
+          "curr": "-0.2",
+          "power": "-2.3",
+          "batt": "LOW",
+          "rc": "disc",
+          "failsafe": "false",
+          "deadman": "true",
+          "des_l": "0",
+          "des_r": "0",
+          "thr_l": "0",
+          "thr_r": "0",
+          "allstop": "false",
+          "rpi_t": "54.5",
+          "int_t": "46.9",
+          "int_kpa": "101.77",
+          "fix": "NONE",
+          "sats": "2",
+          "hdop": "9999.00",
+          "lat": "42.3585768",
+          "lon": "-71.0875190",
+          "spd": "0.00",
+          "hdg": "0.0",
+          "stale": "helm"
+        },
+        "raw": "vname=yip_fs,utc=1780594338.75,mode=NO_HELM,mission=false,helm=NONE,deploy=false,volt=15.3,curr=-0.2,power=-2.3,batt=LOW,rc=disc,failsafe=false,deadman=true,des_l=0,des_r=0,thr_l=0,thr_r=0,allstop=false,rpi_t=54.5,int_t=46.9,int_kpa=101.77,fix=NONE,sats=2,hdop=9999.00,lat=42.3585768,lon=-71.0875190,spd=0.00,hdg=0.0,stale=helm"
+      }
+    }
+  ]
+}

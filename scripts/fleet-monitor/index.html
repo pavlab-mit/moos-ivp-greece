@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" class="theme-dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleet Monitor — Greece</title>
+<style>
+  /* ---- Solarized palette (accents shared across light/dark) ---- */
+  :root {
+    --yellow:#b58900; --orange:#cb4b16; --red:#dc322f; --magenta:#d33682;
+    --violet:#6c71c5; --blue:#268bd2; --green:#859900; --cyan:#2aa198;
+    --radius:10px;
+  }
+  /* Dark = Solarized base03/base02/base0/base1 ... */
+  html.theme-dark {
+    --bg:#002b36; --panel:#073642; --panel2:#0a3a45; --raised:#08313b;
+    --text:#93a1a1; --text2:#839496; --muted:#586e75; --border:#0d4250;
+    --shadow:0 1px 3px rgba(0,0,0,.45);
+  }
+  /* Light = Solarized base3/base2/base00/base01 ... */
+  html.theme-light {
+    --bg:#fdf6e3; --panel:#fffbf0; --panel2:#eee8d5; --raised:#fbf3df;
+    --text:#586e75; --text2:#657b83; --muted:#93a1a1; --border:#e3dcc4;
+    --shadow:0 1px 3px rgba(101,123,131,.18);
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--text);
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    transition:background .4s ease,color .4s ease;
+  }
+  a { color:var(--blue); }
+
+  /* ---- Top bar ---- */
+  header {
+    position:sticky; top:0; z-index:5; display:flex; align-items:center;
+    gap:18px; padding:12px 20px; background:var(--panel);
+    border-bottom:1px solid var(--border); box-shadow:var(--shadow);
+  }
+  header h1 { font-size:15px; font-weight:600; margin:0; color:var(--text); letter-spacing:.3px; }
+  header h1 .sub { color:var(--muted); font-weight:400; }
+  .summary { display:flex; gap:14px; align-items:center; flex:1; flex-wrap:wrap; font-size:13px; }
+  .summary .stat { color:var(--text2); }
+  .summary .stat b { color:var(--text); font-weight:600; }
+  .right { display:flex; align-items:center; gap:12px; margin-left:auto; }
+  .updated { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:7px; }
+  .dot { width:9px; height:9px; border-radius:50%; background:var(--muted); display:inline-block; }
+  .dot.live { background:var(--green); }
+  .dot.pulse { animation:pulse .8s ease; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(133,153,0,.6);} 100%{box-shadow:0 0 0 7px rgba(133,153,0,0);} }
+  button.theme {
+    background:var(--raised); color:var(--text2); border:1px solid var(--border);
+    border-radius:7px; padding:5px 11px; font-size:12px; cursor:pointer;
+  }
+  button.theme:hover { color:var(--text); border-color:var(--muted); }
+
+  /* ---- Connection banner ---- */
+  #banner {
+    display:none; padding:9px 20px; font-size:13px; font-weight:600;
+    background:var(--red); color:#fdf6e3; text-align:center;
+  }
+  #banner.warn { background:var(--yellow); color:#002b36; }
+  #banner.show { display:block; }
+
+  /* ---- Grid ---- */
+  main { padding:20px; }
+  .grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+
+  /* ---- Card ---- */
+  .card {
+    background:var(--panel); border:1px solid var(--border); border-left:4px solid var(--muted);
+    border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;
+    transition:border-color .25s ease,opacity .25s ease;
+  }
+  .card.present        { border-left-color:var(--green); }
+  .card.frontseat_only { border-left-color:var(--yellow); }
+  .card.offline        { border-left-color:var(--red); opacity:.72; }
+
+  .card-head { display:flex; align-items:center; gap:10px; padding:13px 15px 9px; }
+  .card-head .name { font-size:16px; font-weight:600; color:var(--text); }
+  .card-head .id { font-size:12px; color:var(--muted); }
+  .pill {
+    margin-left:auto; font-size:11px; font-weight:700; letter-spacing:.4px;
+    padding:3px 9px; border-radius:20px; text-transform:uppercase; white-space:nowrap;
+  }
+  .pill.present        { background:rgba(133,153,0,.18);  color:var(--green); }
+  .pill.frontseat_only { background:rgba(181,137,0,.20);  color:var(--yellow); }
+  .pill.offline        { background:rgba(220,50,47,.18);  color:var(--red); }
+
+  .card-body { padding:4px 15px 14px; }
+  .row { display:flex; align-items:center; gap:8px; padding:5px 0; font-size:13px; }
+  .row .label { color:var(--muted); width:74px; flex:none; }
+  .row .val { color:var(--text); }
+  .mono { font-variant-numeric:tabular-nums; }
+
+  .mode { font-weight:700; letter-spacing:.3px; }
+  .mode.AUTO{color:var(--green);} .mode.HOLD{color:var(--cyan);} .mode.MANUAL{color:var(--orange);}
+  .mode.NO_HELM{color:var(--muted);} .mode.ALLSTOP{color:var(--violet);}
+  .mode.FAILSAFE{color:var(--red);} .mode.RC_UNKNOWN{color:var(--yellow);}
+
+  .badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+  .badge {
+    font-size:10.5px; font-weight:700; letter-spacing:.4px; padding:2px 7px;
+    border-radius:5px; text-transform:uppercase;
+  }
+  .badge.mission { background:rgba(38,139,210,.18); color:var(--blue); }
+  .badge.low     { background:rgba(220,50,47,.18);  color:var(--red); }
+  .badge.stale   { background:rgba(181,137,0,.20);  color:var(--yellow); }
+  .badge.override{ background:rgba(203,75,22,.20);  color:var(--orange); }
+  .badge.fault   { background:rgba(108,113,196,.20);color:var(--violet); }
+  .badge.notele  { background:transparent; color:var(--muted); border:1px dashed var(--border); }
+
+  .link-dot { width:8px; height:8px; border-radius:50%; flex:none; }
+  .quality-good{background:var(--green);} .quality-mid{background:var(--yellow);} .quality-bad{background:var(--red);}
+
+  .more {
+    margin-top:11px; border-top:1px solid var(--border); padding-top:9px;
+    display:none; grid-template-columns:1fr 1fr; gap:3px 16px; font-size:12px;
+  }
+  .more.open { display:grid; }
+  .more .k { color:var(--muted); }
+  .more .v { color:var(--text2); text-align:right; }
+  .expand {
+    margin-top:9px; font-size:12px; color:var(--blue); cursor:pointer; user-select:none;
+    background:none; border:none; padding:0;
+  }
+  .expand:hover { text-decoration:underline; }
+  footer { padding:10px 20px 24px; color:var(--muted); font-size:11.5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fleet Monitor <span class="sub">· Greece</span></h1>
+  <div class="summary" id="summary"></div>
+  <div class="right">
+    <div class="updated"><span class="dot" id="livedot"></span><span id="updated">connecting…</span></div>
+    <button class="theme" id="themebtn">Theme: Auto</button>
+  </div>
+</header>
+<div id="banner"></div>
+<main><div class="grid" id="grid"></div></main>
+<footer id="foot"></footer>
+
+<script>
+"use strict";
+
+// ---- config (overridable via URL: ?src=...&poll=2) ----
+const params = new URLSearchParams(location.search);
+const SRC  = params.get("src")  || "fleet_status.json";
+const POLL = (parseFloat(params.get("poll")) || 2) * 1000;
+
+// ---- theme: auto by time of day (light 07:00–19:00) + manual override ----
+const THEMES = ["auto", "light", "dark"];
+let themeMode = localStorage.getItem("fm-theme") || "auto";
+function autoTheme() { const h = new Date().getHours(); return (h >= 7 && h < 19) ? "light" : "dark"; }
+function applyTheme() {
+  const eff = themeMode === "auto" ? autoTheme() : themeMode;
+  document.documentElement.className = "theme-" + eff;
+  document.getElementById("themebtn").textContent =
+    "Theme: " + themeMode[0].toUpperCase() + themeMode.slice(1) +
+    (themeMode === "auto" ? " (" + eff + ")" : "");
+}
+document.getElementById("themebtn").onclick = () => {
+  themeMode = THEMES[(THEMES.indexOf(themeMode) + 1) % THEMES.length];
+  localStorage.setItem("fm-theme", themeMode);
+  applyTheme();
+};
+applyTheme();
+setInterval(applyTheme, 60000);   // re-evaluate auto at dusk/dawn while open
+
+// ---- expand state persists across re-renders ----
+const expanded = new Set();
+
+// ---- helpers ----
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+function qualityClass(rtt, loss) {
+  if (rtt == null) return "quality-bad";
+  if (rtt > 250 || loss >= 15) return "quality-bad";
+  if (rtt > 120 || loss >= 5)  return "quality-mid";
+  return "quality-good";
+}
+const STATE_LABEL = { present:"present", frontseat_only:"frontseat only", offline:"offline" };
+
+function detailRows(f) {
+  const items = [
+    ["current",  f.curr  != null ? f.curr + " A" : null],
+    ["power",    f.power != null ? f.power + " W" : null],
+    ["thrust c/a", (f.des_l!=null) ? `L ${f.des_l}/${f.thr_l}  R ${f.des_r}/${f.thr_r}` : null],
+    ["rpi temp", f.rpi_t != null ? f.rpi_t + " °C" : null],
+    ["encl temp",f.int_t != null ? f.int_t + " °C" : null],
+    ["encl kPa", f.int_kpa],
+    ["gps",      f.fix ? `${f.fix} · ${f.sats} sats` : null],
+    ["hdop",     f.hdop],
+    ["position", (f.lat!=null) ? `${f.lat}, ${f.lon}` : null],
+    ["speed",    f.spd != null ? f.spd + " m/s" : null],
+    ["heading",  f.hdg != null ? f.hdg + "°" : null],
+    ["stale",    f.stale],
+  ].filter(x => x[1] != null && x[1] !== "");
+  return items.map(([k, v]) =>
+    `<div class="k">${esc(k)}</div><div class="v mono">${esc(v)}</div>`).join("");
+}
+
+function telemetrySection(b) {
+  const t = b.telemetry;
+  if (!t) {
+    const note = b.state === "present" ? "front-seat app not reporting" : "—";
+    return `<div class="row"><span class="label">telemetry</span>
+            <span class="val"><span class="badge notele">no telemetry</span>
+            <span style="color:var(--muted)"> ${esc(note)}</span></span></div>`;
+  }
+  const f = t.fields || {};
+  const stale = !t.fresh;
+  const mode = f.mode || "?";
+  const badges = [];
+  if (f.mission === "true") badges.push(`<span class="badge mission">mission</span>`);
+  if (f.mode === "MANUAL" && f.helm === "DRIVE") badges.push(`<span class="badge override">override</span>`);
+  if (f.batt === "LOW") badges.push(`<span class="badge low">low batt</span>`);
+  if (stale) badges.push(`<span class="badge stale">stale ${esc(t.age_s)}s</span>`);
+
+  const dim = stale ? ' style="opacity:.55"' : "";
+  return `
+    <div class="row"${dim}><span class="label">mode</span>
+      <span class="val"><span class="mode ${esc(mode)}">${esc(mode)}</span>
+      ${f.helm && f.helm!=="NONE" ? `<span style="color:var(--muted)"> · helm ${esc(f.helm)}</span>`:""}</span></div>
+    <div class="row"${dim}><span class="label">battery</span>
+      <span class="val mono">${esc(f.volt!=null?f.volt+" V":"—")}</span></div>
+    ${badges.length ? `<div class="badges">${badges.join("")}</div>` : ""}
+    <button class="expand" data-boat="${esc(b.name)}">${expanded.has(b.name)?"− less":"+ more"}</button>
+    <div class="more ${expanded.has(b.name)?"open":""}">${detailRows(f)}</div>`;
+}
+
+function card(b) {
+  const up = (b.rungs && b.rungs.uplink) || {};
+  const bs = (b.rungs && b.rungs.backseat) || {};
+  const linkTxt = up.alive
+    ? `${up.rtt_ms!=null?up.rtt_ms+" ms":"—"}${up.loss_pct?`  ·  ${up.loss_pct}% loss`:""}`
+    : "unreachable";
+  const faultBadge = b.fault_at
+    ? `<span class="badge fault">fault: ${esc(b.fault_at)}</span>` : "";
+  return `
+  <div class="card ${esc(b.state)}">
+    <div class="card-head">
+      <span class="name">${esc(b.name)}</span><span class="id">${b.id != null ? "#"+esc(b.id) : ""}</span>
+      <span class="pill ${esc(b.state)}">${esc(STATE_LABEL[b.state]||b.state)}</span>
+    </div>
+    <div class="card-body">
+      <div class="row"><span class="label">link</span>
+        <span class="link-dot ${qualityClass(up.rtt_ms, up.loss_pct)}"></span>
+        <span class="val mono">${esc(linkTxt)}</span></div>
+      <div class="row"><span class="label">backseat</span>
+        <span class="link-dot ${bs.alive?"quality-good":"quality-bad"}"></span>
+        <span class="val">${bs.alive?"reachable":"unreachable"}</span></div>
+      ${faultBadge ? `<div class="badges">${faultBadge}</div>` : ""}
+      ${telemetrySection(b)}
+    </div>
+  </div>`;
+}
+
+function render(snap) {
+  // summary bar
+  const boats = snap.boats || [];
+  const present = boats.filter(b => b.state === "present").length;
+  const shore = snap.shore_ok ? `<b style="color:var(--green)">up</b>`
+                              : `<b style="color:var(--red)">DOWN</b>`;
+  document.getElementById("summary").innerHTML =
+    `<span class="stat"><b>${present}</b>/${boats.length} present</span>` +
+    `<span class="stat"><b>${snap.telemetry_count||0}</b> telemetry fresh</span>` +
+    `<span class="stat">shore radio ${shore}</span>`;
+
+  // grid
+  document.getElementById("grid").innerHTML = boats.map(card).join("");
+  document.querySelectorAll(".expand").forEach(btn => btn.onclick = () => {
+    const n = btn.dataset.boat;
+    expanded.has(n) ? expanded.delete(n) : expanded.add(n);
+    const more = btn.nextElementSibling;
+    more.classList.toggle("open");
+    btn.textContent = expanded.has(n) ? "− less" : "+ more";
+  });
+
+  document.getElementById("foot").textContent =
+    `source: ${SRC} · polling every ${POLL/1000}s · snapshot ${snap.iso||"?"}`;
+}
+
+// ---- connection state ----
+function setBanner(kind, msg) {
+  const el = document.getElementById("banner");
+  if (!kind) { el.className = ""; return; }
+  el.className = "show" + (kind === "warn" ? " warn" : "");
+  el.textContent = msg;
+}
+function setLive(ok, iso) {
+  const dot = document.getElementById("livedot");
+  dot.className = "dot" + (ok ? " live pulse" : "");
+  setTimeout(() => dot.classList.remove("pulse"), 800);
+  document.getElementById("updated").textContent = ok ? `updated ${iso}` : "no data";
+}
+
+let lastText = "";
+async function tick() {
+  try {
+    const res = await fetch(SRC + (SRC.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    const snap = JSON.parse(text);
+
+    // collector running but snapshot gone stale? (ts is epoch seconds)
+    const age = Date.now() / 1000 - (snap.ts || 0);
+    if (age > Math.max(8, (POLL / 1000) * 4))
+      setBanner("warn", `Collector snapshot is ${age.toFixed(0)}s old — collector may be stalled.`);
+    else
+      setBanner(null);
+
+    if (text !== lastText) { render(snap); lastText = text; }
+    setLive(true, snap.iso);
+  } catch (e) {
+    // fetch failed: this is a LOCAL problem (can't reach the collector), shown
+    // distinctly from "a boat is down" — the separation we designed for.
+    setBanner("err", "Disconnected from collector (" + e.message + ") — check your link to the Pi.");
+    setLive(false);
+  }
+}
+tick();
+setInterval(tick, POLL);
+</script>
+</body>
+</html>
