@@ -1,7 +1,7 @@
 {
   "_comment": "Fleet registry for the shoreside connectivity collector (Subsystem A). Addressing is deterministic from BOAT_ID per documentation/01_fleet_and_network_reference.md (§4): shore uplink = 10.1.0.<id>, eth0 gw = 10.<id>.1.1, backseat = 10.<id>.1.100. Only list active boats and toggle 'active'; every IP is derived by formula, so this is the single source of truth and cannot drift from the address plan.",
   "_comment_overrides": "Escape hatch for a boat that doesn't fit the address plan (static lease, different subnet, a frontseat/backseat reached over some other path): pin any rung directly with an 'uplink', 'frontseat', and/or 'backseat' IP string. An explicit rung always wins over the BOAT_ID formula, so you can mix them (keep 'id', override just the backseat) or drop 'id' entirely and pin every rung. See the inactive 'odd' example below.",
-  "shore_radio_ip": "192.168.1.130",
+  "shore_radio_ip": "10.1.0.3",
   "ping_interval_s": 2.0,
   "ping_timeout_s": 1.0,
   "history_window": 30,
@@ -12,60 +12,32 @@
     {
       "id": 31,
       "name": "asha",
-      "active": false
+      "active": true
     },
     {
       "id": 32,
       "name": "bama",
-      "active": false
+      "active": true
     },
     {
       "id": 33,
       "name": "chip",
-      "active": false
+      "active": true
     },
     {
       "id": 34,
       "name": "dale",
-      "active": false
+      "active": true
     },
     {
       "id": 35,
       "name": "ewan",
-      "active": false
+      "active": true
     },
     {
       "id": 36,
       "name": "flex",
-      "active": false
-    },
-    {
-      "name": "odd",
-      "active": false,
-      "uplink": "10.1.0.40",
-      "frontseat": "192.168.5.1",
-      "backseat": "192.168.5.100"
-    },
-    {
-      "name": "wes",
-      "active": true,
-      "uplink": "192.168.1.134",
-      "frontseat": "10.34.1.1",
-      "backseat": "10.34.1.100"
-    },
-    {
-      "name": "via",
-      "active": true,
-      "uplink": "192.168.1.135",
-      "frontseat": "10.35.1.1",
-      "backseat": "10.35.1.100"
-    },
-    {
-      "name": "yip",
-      "active": true,
-      "uplink": "192.168.1.132",
-      "frontseat": "10.32.1.1",
-      "backseat": "10.32.1.100"
+      "active": true
     }
   ]
 }
