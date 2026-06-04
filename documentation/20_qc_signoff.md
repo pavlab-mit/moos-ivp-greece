@@ -1,7 +1,7 @@
 ---
-status: stub
+status: draft
 applies_to: Greece BlueBoat fleet (2026)
-last_updated: 2026-06-02
+last_updated: 2026-06-04
 owner: TBD
 ---
 
@@ -12,10 +12,9 @@ checked off before the boat goes near the water. This document is
 **purely a checklist** — every item references back to the build guide
 that explains how to do it.
 
-> **Status: stub.** Items below are migrated from `QC_Build_Checklist.md`
-> and re-organized to reference numbered guides. The build instructions
-> that used to live in the old checklist have moved into
-> `10_mechanical_assembly.md` and `11_electrical_wiring.md`.
+> **Note.** Items are organized to reference the numbered build guides. The
+> build instructions themselves live in `10_mechanical_assembly.md` and
+> `11_electrical_wiring.md`; this doc only confirms the result.
 
 ---
 
@@ -31,12 +30,17 @@ that explains how to do it.
 ## 2. Mechanical
 _(See `10_mechanical_assembly.md`.)_
 
-### 2.1 Default Configuration
-- [ ] Black cross bars secured to torque spec.
-- [ ] Cross tube secured and sealed.
-- [ ] Props installed.
-- [ ] Identification stickers applied.
-- [ ] Battery velcro installed.
+### 2.1 Stock Boat (Default Configuration)
+- [ ] Frame: all twelve M6 flanged button head screws at ¼–½ turn past snug;
+      no flex at the brackets.
+- [ ] Crosstube: -129 O-rings greased (Molykote 111); C-nuts tight with no
+      rotation on the barbs; hook-and-loop strap secured to the rear crossbar.
+- [ ] Weedless propellers installed — LH on the port M200 motor, RH on the
+      starboard — M3x8 screws tight and fully seated.
+- [ ] Sticker set applied: propeller caution (above each propeller), on/off
+      (by the starboard power switch), identification (starboard hatch-lid
+      depression).
+- [ ] Battery Velcro strips applied around each end of every battery.
 
 ### 2.2 Rails and Mounts
 - [ ] 8020 rails mounted with bushings, fasteners secure.
@@ -50,7 +54,8 @@ _(See `10_mechanical_assembly.md`.)_
 - [ ] Unicore module installed, no movement.
 
 ### 2.3 Passthroughs
-_(All tight, molycoated, dielectric grease on exposed contacts.)_
+_(All bulkhead C-nuts hand-tight with no rotation, molycoated, dielectric
+grease on exposed contacts.)_
 
 - [ ] Front-right M14: 60″ coax / N-type.
 - [ ] Rear-right M14: nav light.
@@ -86,12 +91,12 @@ _(See `11_electrical_wiring.md`.)_
 - [ ] 5 V buck converter wired into DL EVK board (correct polarity).
 
 ### 3.3 Data
-- [ ] 6 ft Ethernet cable through cross tube, connected to DL EVK board.
+- [ ] 6 ft Ethernet cable through crosstube, connected to DL EVK board.
 - [ ] Both antennas seated in DL push-to-connect ports with strain relief.
 - [ ] Both antennas connected to N-type bulkheads, fully seated.
 - [ ] USB → Ethernet adapter connected, wrapped in e-tape, plugged into
       upper USB 3.0 port.
-- [ ] USB 3.0 cable through cross tube, UM982 data port → lower USB 3.0
+- [ ] USB 3.0 cable through crosstube, UM982 data port → lower USB 3.0
       port.
 - [ ] UM982 antennas 1 and 2 labeled and connected to correct SMA ports.
 - [ ] 8-pin Ethernet port terminated as RJ45; connectivity test passed;
@@ -110,9 +115,10 @@ _(See `13_frontseat_first_boot.md` and `16_software_build.md`.)_
 - [ ] Boat boots cleanly.
 
 ### 4.2 Build
-- [ ] `moos-ivp-blueboat` cloned and built.
-- [ ] `moos-ivp-greece` cloned and built.
-- [ ] `bb-init.service` and `fs-mission.service` installed and enabled.
+- [ ] `moos-ivp-blueboat` built (remote repointed to the read-only deploy key).
+- [ ] `moos-ivp-greece` built (remote repointed to the read-only deploy key).
+- [ ] All three autolaunch units installed (`bb-init`, `fs-mission`,
+      `bb-led-idle`); only `bb-init` enabled (`16_software_build.md` §7).
 
 ---
 
@@ -149,9 +155,10 @@ _(See `15_rc_controller.md`, `16_software_build.md`,
 `17_calibration.md`.)_
 
 - [ ] Repositories pulled and rebuilt.
-- [ ] Auto-launch scripts installed.
-- [ ] Boat auto-launches when flat; goes idle when raised.
-- [ ] IMU and magnetometer calibrated; files in the correct locations.
+- [ ] All three autolaunch units installed; only `bb-init` enabled (see §4.2).
+- [ ] Boat auto-launches when flat; goes idle (LED heartbeat) when raised.
+- [ ] Gyro and magnetometer calibrated; cal files present under
+      `/home/pi/mag_cal/<vname>/` (`17_calibration.md`).
 - [ ] `fs-mission` launches without warnings or errors.
 - [ ] Community name correct.
 - [ ] RC controller bound, in SBUS mode, mode switch tested.
@@ -165,3 +172,16 @@ _(See `15_rc_controller.md`, `16_software_build.md`,
 - [ ] Operator #2: __________________________  Date: __________
 
 Boat cleared for water testing.
+
+---
+
+## 7. Change Log
+
+Append-only log of changes to this checklist. One line per change: date —
+change — author.
+
+- 2026-06-02 — Initial draft; checklist migrated from `QC_Build_Checklist.md`
+  and organized to reference the numbered build guides. Uses Blue Robotics
+  terminology and verifiable pass/fail items (frame ¼–½ turn past snug,
+  crosstube seal, bulkhead C-nuts); autolaunch and calibration items track
+  `16_software_build.md` and `17_calibration.md`. — JWenger
