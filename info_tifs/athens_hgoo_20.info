@@ -1,13 +1,7 @@
 // Generated with Anaxi Tile Downloader
 lat_north = 37.93417915098505
 lat_south = 37.93092966319878
-lon_east = 23.629188537597656
-lon_west = 23.62335205078125
-tileStartX = 593096
-tileStartY = 404709
-tileEndX = 593112
-tileEndY = 404720
-zoom = 20
-numTiles = 204
-mapFile = Map_20_593096-593112_404709-404720.jpg
-cmd = /Users/mikerb/.local/bin/anaxi 37.934113 23.628802 37.931430 23.6235 20 https://mt.google.com/vt/lyrs=y&x=%xTile%&y=%yTile%&z=%zoom%
+lon_east  = 23.629188537597656
+lon_west  = 23.62335205078125
+datum_lat = 37.9325
+datum_lon = 23.6263
