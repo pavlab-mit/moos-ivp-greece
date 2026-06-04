@@ -1,7 +1,7 @@
 ---
 status: draft
 applies_to: Greece BlueBoat fleet (2026)
-last_updated: 2026-06-02
+last_updated: 2026-06-04
 owner: TBD
 ---
 
@@ -37,7 +37,9 @@ the formal sign-off checkboxes live in
 Keep cable management clean and add strain relief wherever possible; assume
 these boats will not be handled gently. Mount the radio buck converter close
 to the radio with short, twisted wires rather than long runs. Route inter-hull
-cables (Ethernet, USB, payload power) through the crosstube.
+cables (Ethernet, USB, payload power) through the crosstube. (Note: "crosstube"
+is the inter-hull tube; "crossbar" is the frame member — see
+[`10_mechanical_assembly.md` §4](10_mechanical_assembly.md#4-hull-and-default-configuration-blue-robotics-build-guide).)
 
 Each hatch lid assembly carries a six-circuit fuse board split into two
 sections: **V1** at battery voltage (BATT V — roughly 16.8 V full, ~12 V
@@ -63,7 +65,7 @@ is that the boat will not power on unless an E-stop is connected and released.
 flowchart TD
     BATT["Main battery"] --> CONT["Main power contactor<br/>"]
     ESTOP["E-stop (NC, in series<br/>with power switch)"] --- CONT
-    CONT --> XT["Payload power XT60s<br/>(between cross tubes)"]
+    CONT --> XT["Payload power XT60s<br/>(in the crosstube run)"]
     XT --> PP1["Payload power #1<br/>→ starboard pontoon Y-splitter"]
     XT --> PP2["Payload power #2<br/>→ port pontoon Y-splitter"]
     CONT --> PFB["Port fuse board<br/>V1 = BATT V · V2 = 5V"]
@@ -76,10 +78,10 @@ flowchart TD
 ```mermaid
 flowchart TD
     PiU["Pi · upper USB 3.0"] --> ADP["USB→Ethernet adapter<br/>(e-tape wrapped)"]
-    ADP --> E6["6 ft Ethernet<br/>(through cross tube)"]
+    ADP --> E6["6 ft Ethernet<br/>(through crosstube)"]
     E6 --> EVK["DoodleLabs EVK board"]
     EVK --> ANT["2 antennas<br/>push-to-connect → N-type bulkheads"]
-    PiL["Pi · lower USB 3.0"] --> U3["USB 3.0 cable<br/>(through cross tube)"]
+    PiL["Pi · lower USB 3.0"] --> U3["USB 3.0 cable<br/>(through crosstube)"]
     U3 --> UM["UM982 data port"]
     UM --> SMA["UM982 antennas 1 & 2<br/>(SMA, labeled)"]
     RJ["8-pin → RJ45 (PABLO Ethernet)"] --> NAV["Navigator main Ethernet port"]
@@ -104,8 +106,7 @@ flowchart TD
 
 ## 6. Payload Power Delivery
 
-The payload power connections sit on the XT60 connectors between the cross
-tubes.
+The payload power connections sit on the XT60 connectors in the crosstube run.
 
 1. Terminate payload power #1 (3-pin power) as an XT60 using the black and red
    wires.
@@ -132,14 +133,14 @@ voltage), through a 2 A fuse and a 5 V buck converter.
 
 ## 8. Data Wiring
 
-1. Run the 6 ft Ethernet cable through the cross tube and terminate it into the
+1. Run the 6 ft Ethernet cable through the crosstube and terminate it into the
    DL EVK board.
 2. Connect both antennas to the DL push-to-connect ports with strain relief.
 3. Connect both antennas to the N-type bulkhead connectors. Verify both
    antennas are fully seated **before powering on**.
 4. Connect the USB→Ethernet adapter to the 6 ft Ethernet cable, wrap it in
    e-tape, and plug it into the Pi's upper USB 3.0 port.
-5. Run the USB 3.0 cable through the cross tube and connect the UM982 data port
+5. Run the USB 3.0 cable through the crosstube and connect the UM982 data port
    to the Pi's lower USB 3.0 port.
 6. Confirm UM982 antennas 1 and 2 are labeled, then connect them to the
    appropriate SMA ports.
@@ -183,7 +184,7 @@ Open items that only the person building the boat can supply:
 - [ ] Wire gauge (AWG) used on the main power and payload runs.
 - [ ] Part numbers / sources for buck converters, fuses, and connectors.
 - [ ] As-built photos: E-stop splice, contactor connection, pontoon
-      splitters, radio power, data runs through the cross tube.
+      splitters, radio power, data runs through the crosstube.
 
 ## 12. Change Log
 
@@ -191,8 +192,8 @@ Append-only log of changes to this procedure. One line per change: date —
 change — author.
 
 - 2026-06-02 — Initial draft; electrical steps and diagrams built from
-  `QC_Build_Checklist.md`. Power path detail added from the BlueBoat Integration Guide:
-  radio on port fuse board V1-A (2 A fuse → 5 V buck), payload power on the
-  XT60s between the cross tubes; fuse-board (V1/V2) context and reference
-  links added. open items collected in §11. — JWenger
+  `QC_Build_Checklist.md`. Power-path detail from the BlueBoat Integration
+  Guide: radio on port fuse board V1-A (2 A fuse → 5 V buck), payload power on
+  the XT60s in the crosstube run; fuse-board (V1/V2) context and reference links
+  added; open items collected in §11. — JWenger
 
