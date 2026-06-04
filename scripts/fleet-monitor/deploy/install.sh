@@ -7,7 +7,11 @@
 # Usage (from anywhere):
 #   sudo ./deploy/install.sh                 # run as the invoking (sudo) user
 #   sudo RUN_USER=pi ./deploy/install.sh     # force a specific service user
-#   sudo PORT=8080 ./deploy/install.sh       # override dashboard port (default 8000)
+#   sudo PORT=8080 ./deploy/install.sh       # override dashboard port (default 80)
+#
+# On the default port 80 the dashboard answers a bare IP in the browser
+# (http://10.1.0.10/) -- no port, no /index.html. Ports below 1024 need
+# CAP_NET_BIND_SERVICE, which this installer grants the dashboard service.
 #
 # After install:
 #   systemctl status fleet-collector fleet-dashboard
@@ -37,13 +41,23 @@ if [[ -z "$PY" ]]; then
   exit 1
 fi
 
-PORT="${PORT:-8000}"
+PORT="${PORT:-80}"
+
+# Ports below 1024 are privileged; grant the (non-root) service the one
+# capability it needs to bind them. Above 1024 no capability is required.
+if [[ "$PORT" -lt 1024 ]]; then
+  BIND_CAP="AmbientCapabilities=CAP_NET_BIND_SERVICE"
+  DASH_URL="http://<pi-ip>/"
+else
+  BIND_CAP=""
+  DASH_URL="http://<pi-ip>:$PORT/"
+fi
 
 echo "Installing fleet-monitor services:"
 echo "  directory : $DIR"
 echo "  run as    : $RUN_USER"
 echo "  python    : $PY"
-echo "  dashboard : http://<pi-ip>:$PORT/index.html"
+echo "  dashboard : $DASH_URL"
 echo
 
 # --- collector: probes the fleet, writes fleet_status.json every cycle ---
@@ -77,6 +91,7 @@ Type=simple
 User=$RUN_USER
 WorkingDirectory=$DIR
 ExecStart=$PY -m http.server $PORT --bind 0.0.0.0
+$BIND_CAP
 Restart=always
 RestartSec=2
 
