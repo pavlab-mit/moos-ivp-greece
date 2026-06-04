@@ -1,8 +1,8 @@
 ---
-status: stub
+status: draft
 applies_to: Greece BlueBoat fleet (2026)
-last_updated: 2026-06-02
-owner: TBD
+last_updated: 2026-06-04
+owner: JWenger
 ---
 
 # Credentials — Template
@@ -90,3 +90,14 @@ When you introduce a new credential into a doc:
 
 If a credential rotates, only `00_secrets.md` needs to change — no doc edits
 required.
+
+---
+
+## 8. Change Log
+
+Append-only log of changes to this template. One line per change: date —
+change — author.
+
+- 2026-06-02 — Initial draft; credential placeholders catalogued by subsystem
+  (frontseat, DoodleLabs radios, shoreside, deploy keys, NTRIP). Deploy keys
+  are fleet-wide and read-only, one per repo. — JWenger
