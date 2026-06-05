@@ -1,29 +1,34 @@
 ---
 status: draft
-applies_to: Greece shoreside collector (fleet connectivity + telemetry)
-last_updated: 2026-06-03
+applies_to: Greece shoreside collector (fleet connectivity + telemetry + RF)
+last_updated: 2026-06-04
 owner: JWenger
 ---
 
-# Fleet Monitor — Collector (Subsystems A + B)
+# Fleet Monitor — Collector (Subsystems A + B + C)
 
 ## 1. Overview
 
-`collect.py` is a shoreside process that consolidates two views of every active
+`collect.py` is a shoreside process that consolidates three views of every active
 boat into one JSON snapshot the dashboard reads. **Subsystem A** (connectivity)
 probes the fleet over ICMP to answer whether each boat is on the network and
 whether its backseat (the pablo) is up at its assigned IP. **Subsystem B**
 (telemetry) receives the `BB_STATUS` datagrams that each boat's front-seat
 `pBB_Status` app pushes — battery, fused control mode, mission state, and more —
-and merges them per boat. It is meant for the operator standing up shoreside
-monitoring at the Greece site. This is the data-collection half only; the
-web/dashboard layer is a separate piece that consumes the snapshot.
+and merges them per boat. **Subsystem C** (RF/mesh quality) polls *only* the
+shoreside DoodleLabs radio's JSON-RPC API for its linkstate and reads, per boat,
+the radio's view of that boat's link — RSSI, MCS, batman-adv mesh TQ, and
+direct/relay hop. It is meant for the operator standing up shoreside monitoring
+at the Greece site. This is the data-collection half only; the web/dashboard
+layer is a separate piece that consumes the snapshot.
 
-The two subsystems are independent by design: A probes *outward* and works even
+The three subsystems are independent by design: A probes *outward* and works even
 when all boat software is dead; B receives *inward* and only carries data while
-the front-seat mission is running. A boat can therefore be `present` (A) with no
+the front-seat mission is running; C reaches *sideways* to one radio and works
+whenever that radio is up. A boat can therefore be `present` (A) with no
 telemetry (B), which correctly reads as "reachable, but the status app isn't
-running."
+running" — or `present` with a sagging RF link (C), the early warning that ICMP
+reachability alone can't give you.
 
 ## 2. Prerequisites
 
@@ -36,6 +41,11 @@ running."
   binary, both present by default on Raspberry Pi OS.
 - For Subsystem B: each boat's front-seat mission running `pBB_Status` with
   `tx_ip` set to this collector and `tx_port` matching `telemetry_port` below.
+- For Subsystem C: the shore radio reachable from the collector at its API IP
+  (`10.1.0.3` by default — already the shore-radio ping rung), with JSON-RPC
+  enabled (default on June-2024+ firmware) and credentials set in `fleet.json`.
+  No boat-side setup and no extra RB5009 routes are needed — we poll the shore
+  radio only, and it already hears every boat radio on the mesh.
 - This repository checked out on the collector Pi.
 
 ## 3. Context
@@ -123,7 +133,35 @@ Telemetry is timestamped on receipt and carries an `age_s` and a `fresh` flag
 show a boat `present` (A) with `telemetry: null` or `fresh: false` (B) — that is
 the correct reading of "reachable, but `pBB_Status` isn't sending".
 
-### 3.5 Snapshot handoff
+### 3.5 RF/mesh quality (Subsystem C)
+
+The collector polls **only the shoreside DoodleLabs radio** over its JSON-RPC
+(ubus) API at `radio.api_ip`: it logs in once, then reads
+`/tmp/linkstate_current.json` each `radio.poll_interval_s`. We poll the shore
+radio alone — not each boat radio — for the same reason A uses one collector:
+the shore radio's own station and mesh tables already list *every* boat radio it
+hears, so one HTTP call per poll yields shore→fleet RF quality, and no extra
+RB5009 route into the radio-management `/30`s is required. The poll runs in a
+worker thread on its own cadence; a dead or unreachable radio just lets the data
+go stale (`radio.ok:false`) and never disturbs A or B. Pure standard library
+(`urllib` + `ssl`), so the no-`pip` rule still holds; the radio's self-signed
+cert means TLS verification is disabled (encrypted link, radio trusted by
+network position).
+
+Each station is joined back to a boat **by MAC**. The mapping lives in one place
+— `radio.macs` in `fleet.json` — to be filled in once at the site. Until a
+boat's MAC is filled, that boat shows no RF data and any station the shore radio
+hears for it surfaces in the snapshot's `radio.unmapped` list (and the
+dashboard's "unmapped" table), so nothing is hidden; filling the MAC snaps it to
+the boat. Per boat, Subsystem C reports `rssi` (+ per-antenna `rssi_ant`), `mcs`,
+batman-adv `tq` (0–255) with `hop_status` (`direct`/`relay`) and
+`last_seen_msecs`, plus `pl_ratio`, `tx_retries`/`tx_failed`, and `inactive`.
+The shore radio's own `noise` floor, channel/frequency/width, `activity`, CPU
+load, and free memory ride along at the top level. Because C is independent, a
+boat can be `present` (A) yet show a weak or relayed RF link (C) — the early
+warning that a link is degrading before ICMP starts dropping.
+
+### 3.6 Snapshot handoff
 
 Each sweep rewrites the snapshot atomically (temp file plus `os.replace`), so a
 reader never observes a half-written file. The snapshot is the only contract
@@ -142,6 +180,19 @@ Edit `fleet.json`. Set the active boats and tune the sweep:
   "snapshot_path": "fleet_status.json",
   "telemetry_port": 9300,
   "telemetry_stale_s": 5.0,
+  "radio": {
+    "enabled": true,
+    "api_ip": "10.1.0.3",
+    "username": "user",
+    "password": "DoodleSmartRadio",
+    "poll_interval_s": 2.0,
+    "timeout_s": 4.0,
+    "stale_s": 6.0,
+    "macs": {
+      "asha": "", "bama": "", "chip": "",
+      "dale": "", "ewan": "", "flex": ""
+    }
+  },
   "boats": [
     { "id": 31, "name": "asha", "active": true },
     { "id": 32, "name": "bama", "active": true }
@@ -153,6 +204,17 @@ Toggle `active` to add or drop a boat. `history_window` is how many recent sweep
 feed the rolling `loss_pct` and `avg_rtt_ms` per rung. `telemetry_port` must
 match each boat's `pBB_Status` `tx_port`; `telemetry_stale_s` is how long after
 the last datagram a boat's telemetry is still considered `fresh`.
+
+The **`radio`** block configures Subsystem C. Set `enabled:false` to turn it off
+entirely. `api_ip` is the shore radio's JSON-RPC address (the same `10.1.0.3`
+shore rung); `username`/`password` default to the June-2024+ firmware login.
+`poll_interval_s`, `timeout_s`, and `stale_s` tune the poll cadence, per-request
+timeout, and how long after the last good poll the RF data is still `fresh`.
+**`macs` is the one thing to fill in at Greece** — map each boat name to its
+boat-radio MAC (lowercase, colon-separated). Leave an entry blank until you know
+it: that boat simply shows no RF data, and any station the shore radio hears for
+it appears under `radio.unmapped` until the MAC is supplied. The MAC map is the
+single source of attribution; nothing else changes when you fill it in.
 
 ## 5. Run
 
@@ -183,7 +245,7 @@ Run as a `systemd` unit on the collector Pi so it survives reboots. Create
 
 ```ini
 [Unit]
-Description=Shoreside fleet collector (connectivity + telemetry)
+Description=Shoreside fleet collector (connectivity + telemetry + RF)
 After=network-online.target
 
 [Service]
@@ -221,6 +283,12 @@ sudo systemctl enable --now fleet-monitor.service
   `telemetry` object with `fresh: true`. Stop `pBB_Status` and confirm it flips
   to `fresh: false` within `telemetry_stale_s`, while connectivity stays
   `present`.
+- For Subsystem C, confirm the printed header shows `radio fresh (noise …)` and
+  the snapshot's top-level `radio.ok` is `true`. With a boat's MAC filled into
+  `radio.macs`, confirm that boat's entry has a `radio` object with a real
+  `rssi`/`tq`; with a MAC left blank, confirm the boat's `radio` is `null` and
+  its station appears under `radio.unmapped`. Power the shore radio down and
+  confirm `radio.ok` goes `false` within `stale_s` while A and B keep running.
 
 ## 8. Troubleshooting
 
@@ -234,6 +302,10 @@ sudo systemctl enable --now fleet-monitor.service
 | Boat `present` but `telemetry` null | `pBB_Status` not running, or `tx_ip`/`tx_port` wrong | Check the front-seat mission; confirm `tx_port` == `telemetry_port`. |
 | `telemetry port N unavailable` on start | Another process holds the port | Free the port or change `telemetry_port` (and each boat's `tx_port`). |
 | Telemetry shows but `matched:false` | Boat's source IP isn't its `10.1.0.<id>` uplink | Expected off-site; on the mesh it attributes by uplink IP automatically. |
+| Radio tab empty / `radio.ok:false` | Shore radio unreachable, JSON-RPC off, or wrong creds | Verify `https://10.1.0.3/ubus` reachable; enable JSON-RPC; check `radio.username`/`password`. |
+| Boats listed under "unmapped" | Their MACs aren't in `radio.macs` yet | Fill each boat's boat-radio MAC into `radio.macs` (lowercase). |
+| Boat `present` but `radio` null | MAC blank, or shore radio doesn't currently hear it | Fill the MAC; if filled, check the boat radio's mesh link. |
+| `radio` STALE in header | Polls failing after a good start (radio rebooted, link flapping) | Transient is fine; if persistent, check the shore radio and `timeout_s`. |
 
 ## 9. Quick Reference
 
@@ -243,10 +315,14 @@ sudo systemctl enable --now fleet-monitor.service
   `offline` (uplink down).
 - Telemetry (B): boats push `BB_STATUS` to `telemetry_port` (default 9300);
   attributed by source IP, each entry carries `age_s` + `fresh`.
+- RF/mesh (C): poll the shore radio's JSON-RPC linkstate at `radio.api_ip`;
+  join stations to boats by `radio.macs`; per boat: `rssi`, `mcs`, mesh `tq`
+  (0–255), `hop_status`. Fill `radio.macs` at the site; blanks → `radio.unmapped`.
 - Start a sweep: `./collect.py --once`. Run the service:
   `sudo systemctl enable --now fleet-monitor.service`.
 - Snapshot: `fleet_status.json` (or the `--snapshot` path), rewritten atomically
-  every `ping_interval_s`; each boat carries A `rungs` + B `telemetry`.
+  every `ping_interval_s`; each boat carries A `rungs` + B `telemetry` + C `radio`,
+  plus a top-level `radio` summary.
 - Dashboard: `index.html`, served over HTTP (`python3 -m http.server 8000`),
   polls the snapshot. Dev loop: `./sim_fleet.py &` then the server.
 
@@ -274,13 +350,21 @@ attributes by the payload `vname` (`matched: false`) — expected, and harmless.
 
 ## 11. Dashboard
 
-`index.html` is a single self-contained page (vanilla JS, no dependencies) that
-polls `fleet_status.json` and renders one card per boat: connectivity state,
-link quality, backseat reachability, and telemetry (mode, battery, mission),
-with badges for low battery, stale telemetry, the mode/helm `override`
-disagreement, and the `fault_at` rung. The theme is Solarized, auto-switching
-light/dark by time of day with a manual toggle. The header shows a fleet summary
-and a connection indicator: a failed fetch reads as "disconnected from
+`index.html` is a single self-contained page (vanilla JS, no dependencies) with
+two tabs in the header. The **Fleet** tab renders one card per boat: connectivity
+state, link quality, backseat reachability, and telemetry (mode, battery,
+mission), with badges for low battery, stale telemetry, the mode/helm `override`
+disagreement, and the `fault_at` rung. RF/mesh data is deliberately kept off the
+Fleet tab to avoid clutter. The **Radio** tab is the single home for Subsystem C:
+a shore-radio panel (status, noise floor, channel/frequency/width, activity, CPU
+load, free memory, stations heard) above a per-boat table of RSSI (with bar),
+antennas, MCS, mesh TQ (with bar), direct/relay hop, packet loss, and tx
+retry/fail — plus an "unmapped" table listing any station whose MAC isn't yet in
+`radio.macs`. Boats the shore radio can't hear read "not heard"; radio-subsystem
+health (live/stale/unreachable) shows in the shore-radio panel here, not in the
+Fleet header. The theme is Solarized, auto-switching light/dark by time of day
+with a manual toggle; the active tab is remembered. The header shows a fleet
+summary and a connection indicator: a failed fetch reads as "disconnected from
 collector" (a *local* link problem), and an old snapshot warns the collector may
 be stalled — both distinct from any individual boat being down.
 

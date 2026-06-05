@@ -8,6 +8,24 @@
   "snapshot_path": "fleet_status.json",
   "telemetry_port": 9300,
   "telemetry_stale_s": 5.0,
+  "_comment_radio": "Subsystem C: RF/mesh quality from the shoreside DoodleLabs radio. The collector polls ONLY the shore radio's JSON-RPC API (api_ip) once per poll_interval_s, reads its linkstate (/tmp/linkstate_current.json), and joins each station it hears back to a boat by MAC. Set enabled:false to turn the whole subsystem off. 'macs' is the one place to fill in once at Greece -- map each boat name to its boat-radio MAC (lowercase, colon-separated). A blank entry means 'not yet known': that boat shows no RF data, and any station the shore radio hears for it lands in the dashboard's 'unmapped' list until you fill the MAC in. Credentials default to the June-2024+ firmware (user/DoodleSmartRadio).",
+  "radio": {
+    "enabled": true,
+    "api_ip": "10.1.0.3",
+    "username": "user",
+    "password": "DoodleSmartRadio",
+    "poll_interval_s": 2.0,
+    "timeout_s": 4.0,
+    "stale_s": 6.0,
+    "macs": {
+      "asha": "",
+      "bama": "",
+      "chip": "",
+      "dale": "",
+      "ewan": "",
+      "flex": ""
+    }
+  },
   "boats": [
     {
       "id": 31,

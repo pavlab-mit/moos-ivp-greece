@@ -126,12 +126,79 @@
     background:none; border:none; padding:0;
   }
   .expand:hover { text-decoration:underline; }
+
+  /* ---- Tabs + view switching ---- */
+  .tabs { display:flex; gap:4px; }
+  .tab {
+    background:none; border:1px solid transparent; border-radius:7px;
+    padding:5px 13px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer;
+  }
+  .tab:hover { color:var(--text); }
+  .tab.active { color:var(--text); background:var(--raised); border-color:var(--border); }
+  .view { display:none; }
+  .view.active { display:block; }
+
+  /* ---- Radio: shore panel ---- */
+  .shore-panel {
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:14px 18px; margin-bottom:18px;
+  }
+  .shore-panel h2 {
+    margin:0 0 12px; font-size:14px; font-weight:600; color:var(--text);
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .shore-stats { display:flex; flex-wrap:wrap; gap:14px 30px; }
+  .shore-stats .s { font-size:12px; color:var(--muted); }
+  .shore-stats .s b { display:block; font-size:17px; color:var(--text); font-weight:600;
+    font-variant-numeric:tabular-nums; margin-top:2px; }
+  .shore-stats .s .u { font-size:12px; color:var(--muted); font-weight:400; }
+  .tag { font-size:11px; font-weight:700; letter-spacing:.4px; padding:3px 9px;
+    border-radius:20px; text-transform:uppercase; }
+  .tag.ok    { background:rgba(133,153,0,.18); color:var(--green); }
+  .tag.stale { background:rgba(181,137,0,.20); color:var(--yellow); }
+  .tag.down  { background:rgba(220,50,47,.18); color:var(--red); }
+
+  /* ---- Radio: station table ---- */
+  .rtable { width:100%; border-collapse:collapse; background:var(--panel);
+    border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+    box-shadow:var(--shadow); }
+  .rtable th, .rtable td { padding:9px 12px; text-align:left; font-size:13px;
+    border-bottom:1px solid var(--border); white-space:nowrap; }
+  .rtable th { color:var(--muted); font-weight:600; font-size:11px;
+    text-transform:uppercase; letter-spacing:.4px; }
+  .rtable tr:last-child td { border-bottom:none; }
+  .rtable td.boat { font-weight:600; color:var(--text); }
+  .rtable td.num { font-variant-numeric:tabular-nums; color:var(--text2); }
+  .rtable tr.notheard td { color:var(--muted); font-style:italic; }
+
+  /* ---- meter bar (RSSI / TQ) ---- */
+  .meter { display:inline-flex; align-items:center; gap:9px; }
+  .meter .track { width:62px; height:7px; border-radius:4px; background:var(--panel2);
+    overflow:hidden; flex:none; }
+  .meter .fill { height:100%; border-radius:4px; }
+  .fill.good{background:var(--green);} .fill.mid{background:var(--yellow);} .fill.bad{background:var(--red);}
+  .meter .mv { font-variant-numeric:tabular-nums; color:var(--text2); min-width:54px; }
+
+  .hop { font-size:10.5px; font-weight:700; letter-spacing:.4px; padding:2px 7px;
+    border-radius:5px; text-transform:uppercase; }
+  .hop.direct { background:rgba(38,139,210,.16); color:var(--blue); }
+  .hop.relay  { background:rgba(203,75,22,.20); color:var(--orange); }
+
+  .section-note { margin:18px 0 8px; font-size:13px; color:var(--text2); }
+  .section-note code, .muted-note code { background:var(--panel2); padding:1px 5px;
+    border-radius:4px; font-size:12px; }
+  .muted-note { color:var(--muted); font-size:13px; padding:28px 20px; text-align:center; }
+
   footer { padding:10px 20px 24px; color:var(--muted); font-size:11.5px; }
 </style>
 </head>
 <body>
 <header>
   <h1>Fleet Monitor <span class="sub">· Greece</span></h1>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-view="fleet">Fleet</button>
+    <button class="tab" data-view="radio">Radio</button>
+  </nav>
   <div class="summary" id="summary"></div>
   <div class="right">
     <div class="updated"><span class="dot" id="livedot"></span><span id="updated">connecting…</span></div>
@@ -139,7 +206,10 @@
   </div>
 </header>
 <div id="banner"></div>
-<main><div class="grid" id="grid"></div></main>
+<main>
+  <section class="view active" id="view-fleet"><div class="grid" id="grid"></div></section>
+  <section class="view" id="view-radio"></section>
+</main>
 <footer id="foot"></footer>
 
 <script>
@@ -169,8 +239,31 @@ document.getElementById("themebtn").onclick = () => {
 applyTheme();
 setInterval(applyTheme, 60000);   // re-evaluate auto at dusk/dawn while open
 
+// ---- tabs: Fleet / Radio, choice persisted ----
+let view = localStorage.getItem("fm-view") || "fleet";
+function applyView() {
+  document.querySelectorAll(".tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.view === view));
+  document.querySelectorAll(".view").forEach(v =>
+    v.classList.toggle("active", v.id === "view-" + view));
+}
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  view = t.dataset.view; localStorage.setItem("fm-view", view); applyView();
+});
+applyView();
+
 // ---- expand state persists across re-renders ----
 const expanded = new Set();
+
+// ---- RF quality helpers (Radio tab only) ----
+function rssiClass(r){ if(r==null) return "bad"; if(r>=-65) return "good"; if(r>=-80) return "mid"; return "bad"; }
+function tqClass(t){ if(t==null) return "bad"; if(t>=200) return "good"; if(t>=120) return "mid"; return "bad"; }
+function rssiPct(r){ if(r==null) return 0; return Math.max(0, Math.min(100, (r + 90) / 50 * 100)); }
+function meter(pct, cls, label){
+  return `<span class="meter"><span class="track"><span class="fill ${cls}" style="width:${pct}%"></span></span>` +
+         `<span class="mv">${esc(label)}</span></span>`;
+}
+function fmtMem(b){ return b != null ? (b / 1048576).toFixed(0) + " MB" : "—"; }
 
 // ---- helpers ----
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
@@ -259,8 +352,82 @@ function card(b) {
   </div>`;
 }
 
+// ---- Radio tab: shore-radio panel + per-boat station table + unmapped ----
+function renderRadio(snap) {
+  const el = document.getElementById("view-radio");
+  const r = snap.radio || {};
+  if (!r.enabled) {
+    el.innerHTML = `<div class="muted-note">Radio subsystem is off. Set
+      <code>radio.enabled: true</code> in fleet.json to pull RF/mesh stats from
+      the shore radio.</div>`;
+    return;
+  }
+
+  let tag, txt;
+  if (!r.ok)         { tag = "down";  txt = "API unreachable"; }
+  else if (!r.fresh) { tag = "stale"; txt = `stale ${r.age_s}s`; }
+  else               { tag = "ok";    txt = "live"; }
+  const load = Array.isArray(r.cpu_load) ? r.cpu_load.map(x => Number(x).toFixed(2)).join(" / ") : "—";
+  const shore = `
+    <div class="shore-panel">
+      <h2>Shore radio <span class="tag ${tag}">${esc(txt)}</span>
+        <span style="color:var(--muted);font-weight:400;font-size:12px">${esc(r.api_ip||"")} · polled ${esc(r.polled_iso||"?")}</span></h2>
+      <div class="shore-stats">
+        <div class="s">noise floor<b>${r.noise!=null?esc(r.noise)+' <span class="u">dBm</span>':'—'}</b></div>
+        <div class="s">channel<b>${r.oper_chan!=null?esc(r.oper_chan):'—'} <span class="u">${r.oper_freq!=null?'· '+esc(r.oper_freq)+' MHz':''} ${r.chan_width?'· '+esc(r.chan_width)+' MHz BW':''}</span></b></div>
+        <div class="s">channel activity<b>${r.activity?'busy':'idle'}</b></div>
+        <div class="s">stations heard<b>${r.station_count!=null?esc(r.station_count):'—'} <span class="u">(${esc(r.mapped_count||0)} mapped)</span></b></div>
+        <div class="s">cpu load<b style="font-size:14px">${esc(load)} <span class="u">1/5/15m</span></b></div>
+        <div class="s">free memory<b>${esc(fmtMem(r.freemem))}</b></div>
+      </div>
+    </div>`;
+
+  const boats = snap.boats || [];
+  const rows = boats.map(b => {
+    const r2 = b.radio;
+    if (!r2) {
+      const note = b.state === "offline" ? "offline — not heard by shore radio" : "not heard";
+      return `<tr class="notheard"><td class="boat">${esc(b.name)}</td><td colspan="7">${esc(note)}</td></tr>`;
+    }
+    const rBar = meter(rssiPct(r2.rssi), rssiClass(r2.rssi), r2.rssi!=null?r2.rssi+" dBm":"—");
+    const tBar = meter(r2.tq!=null?r2.tq/255*100:0, tqClass(r2.tq), r2.tq!=null?r2.tq+"/255":"—");
+    const ant = Array.isArray(r2.rssi_ant) ? r2.rssi_ant.join(" / ") : "—";
+    const hop = r2.hop_status ? `<span class="hop ${esc(r2.hop_status)}">${esc(r2.hop_status)}</span>` : "—";
+    const pl = r2.pl_ratio!=null ? (r2.pl_ratio*100).toFixed(1)+"%" : "—";
+    const tx = `${r2.tx_retries!=null?r2.tx_retries:"—"} / ${r2.tx_failed!=null?r2.tx_failed:"—"}`;
+    return `<tr>
+      <td class="boat">${esc(b.name)}</td>
+      <td>${rBar}</td>
+      <td class="num">${esc(ant)}</td>
+      <td class="num">${r2.mcs!=null?esc(r2.mcs):"—"}</td>
+      <td>${tBar}</td>
+      <td>${hop}</td>
+      <td class="num">${esc(pl)}</td>
+      <td class="num">${esc(tx)}</td>
+    </tr>`;
+  }).join("");
+  const table = `<table class="rtable"><thead><tr>
+    <th>boat</th><th>signal (RSSI)</th><th>antennas</th><th>MCS</th>
+    <th>mesh TQ</th><th>hop</th><th>loss</th><th>tx retry / fail</th>
+    </tr></thead><tbody>${rows}</tbody></table>`;
+
+  let unmapped = "";
+  if (Array.isArray(r.unmapped) && r.unmapped.length) {
+    const u = r.unmapped.map(s => `<tr>
+      <td class="num">${esc(s.mac)}</td>
+      <td class="num">${s.rssi!=null?s.rssi+" dBm":"—"}</td>
+      <td class="num">${s.tq!=null?s.tq+"/255":"—"}</td>
+      <td class="num">${s.mcs!=null?esc(s.mcs):"—"}</td></tr>`).join("");
+    unmapped = `<div class="section-note">Heard but unmapped — add these MACs to
+      <code>radio.macs</code> in fleet.json to attribute them to boats:</div>
+      <table class="rtable"><thead><tr><th>MAC</th><th>RSSI</th><th>mesh TQ</th><th>MCS</th></tr></thead>
+      <tbody>${u}</tbody></table>`;
+  }
+  el.innerHTML = shore + table + unmapped;
+}
+
 function render(snap) {
-  // summary bar
+  // summary bar (Fleet/A+B only — radio-subsystem health lives on the Radio tab)
   const boats = snap.boats || [];
   const present = boats.filter(b => b.state === "present").length;
   const shore = snap.shore_ok ? `<b style="color:var(--green)">up</b>`
@@ -279,6 +446,9 @@ function render(snap) {
     more.classList.toggle("open");
     btn.textContent = expanded.has(n) ? "− less" : "+ more";
   });
+
+  // radio tab (rendered every tick; cheap, and stays warm behind the fleet view)
+  renderRadio(snap);
 
   document.getElementById("foot").textContent =
     `source: ${SRC} · polling every ${POLL/1000}s · snapshot ${snap.iso||"?"}`;

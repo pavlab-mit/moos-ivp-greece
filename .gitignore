@@ -1,3 +1,7 @@
+## 0 - Python
+__pycache__/
+*.pyc
+
 ## 1 - C++
 
 # Prerequisites

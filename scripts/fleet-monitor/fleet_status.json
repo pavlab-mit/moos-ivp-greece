@@ -1,35 +1,323 @@
 {
-  "ts": 1780594338.910744,
-  "iso": "13:32:18",
+  "ts": 1780606228.8032284,
+  "iso": "20:50:28",
   "shore_radio": {
-    "ip": "192.168.1.130",
+    "ip": "10.1.0.3",
     "alive": true,
-    "rtt_ms": 3.792,
-    "avg_rtt_ms": 4.1,
+    "rtt_ms": 1.2,
+    "avg_rtt_ms": 1.2,
     "loss_pct": 0.0
   },
   "shore_ok": true,
   "telemetry_port": 9300,
-  "telemetry_count": 1,
+  "telemetry_count": 4,
+  "radio": {
+    "enabled": true,
+    "ok": true,
+    "fresh": true,
+    "api_ip": "10.1.0.3",
+    "polled_ts": 1780606228.4032283,
+    "polled_iso": "20:50:28",
+    "age_s": 0.4,
+    "station_count": 5,
+    "mapped_count": 5,
+    "unmapped": [],
+    "oper_chan": 13,
+    "oper_freq": 2472,
+    "chan_width": "20",
+    "noise": -97.5,
+    "activity": 0,
+    "lna_status": "1",
+    "cpu_load": [
+      0.12,
+      0.1,
+      0.09
+    ],
+    "freemem": 14700000
+  },
   "boats": [
     {
-      "name": "wes",
-      "id": null,
+      "name": "asha",
+      "id": 31,
+      "state": "present",
+      "fault_at": null,
+      "rungs": {
+        "uplink": {
+          "ip": "10.1.0.31",
+          "alive": true,
+          "rtt_ms": 34.3,
+          "avg_rtt_ms": 34.3,
+          "loss_pct": 0.0
+        },
+        "frontseat": {
+          "ip": "10.31.1.1",
+          "alive": true,
+          "rtt_ms": 34.8,
+          "avg_rtt_ms": 34.8,
+          "loss_pct": 0.0
+        },
+        "backseat": {
+          "ip": "10.31.1.100",
+          "alive": true,
+          "rtt_ms": 35.3,
+          "avg_rtt_ms": 35.3,
+          "loss_pct": 0.0
+        }
+      },
+      "last_present_ts": 1780606228.8032284,
+      "last_present_iso": "20:50:28",
+      "telemetry": {
+        "received_ts": 1780606228.4032283,
+        "received_iso": "20:50:28",
+        "age_s": 0.4,
+        "fresh": true,
+        "src_ip": "10.1.0.31",
+        "matched": true,
+        "fields": {
+          "vname": "asha",
+          "utc": "1780606228.80",
+          "mode": "AUTO",
+          "mission": "true",
+          "helm": "DRIVE",
+          "deploy": "true",
+          "volt": "24.6",
+          "curr": "7.1",
+          "power": "101",
+          "batt": "OK",
+          "rc": "conn",
+          "failsafe": "false",
+          "deadman": "false",
+          "des_l": "33",
+          "des_r": "33",
+          "thr_l": "33",
+          "thr_r": "33",
+          "allstop": "false",
+          "rpi_t": "29.0",
+          "int_t": "34.0",
+          "int_kpa": "100.17",
+          "fix": "RTK_FIX",
+          "sats": "27",
+          "hdop": "1.00",
+          "lat": "37.4366064",
+          "lon": "24.9471549",
+          "spd": "1.34",
+          "hdg": "261.9",
+          "stale": "none"
+        },
+        "raw": "vname=asha,utc=1780606228.80,mode=AUTO,mission=true,helm=DRIVE,deploy=true,volt=24.6,curr=7.1,power=101,batt=OK,rc=conn,failsafe=false,deadman=false,des_l=33,des_r=33,thr_l=33,thr_r=33,allstop=false,rpi_t=29.0,int_t=34.0,int_kpa=100.17,fix=RTK_FIX,sats=27,hdop=1.00,lat=37.4366064,lon=24.9471549,spd=1.34,hdg=261.9,stale=none"
+      },
+      "radio": {
+        "mac": "02:00:00:00:1f:01",
+        "rssi": -48,
+        "rssi_ant": [
+          -52,
+          -52
+        ],
+        "mcs": 15,
+        "pl_ratio": 0.01,
+        "tx_retries": 1,
+        "tx_failed": 0,
+        "inactive": 89,
+        "tq": 250,
+        "hop_status": "direct",
+        "last_seen_msecs": 592,
+        "heard": true
+      }
+    },
+    {
+      "name": "bama",
+      "id": 32,
+      "state": "present",
+      "fault_at": null,
+      "rungs": {
+        "uplink": {
+          "ip": "10.1.0.32",
+          "alive": true,
+          "rtt_ms": 48.9,
+          "avg_rtt_ms": 48.9,
+          "loss_pct": 0.0
+        },
+        "frontseat": {
+          "ip": "10.32.1.1",
+          "alive": true,
+          "rtt_ms": 49.4,
+          "avg_rtt_ms": 49.4,
+          "loss_pct": 0.0
+        },
+        "backseat": {
+          "ip": "10.32.1.100",
+          "alive": true,
+          "rtt_ms": 49.9,
+          "avg_rtt_ms": 49.9,
+          "loss_pct": 0.0
+        }
+      },
+      "last_present_ts": 1780606228.8032284,
+      "last_present_iso": "20:50:28",
+      "telemetry": {
+        "received_ts": 1780606228.5032284,
+        "received_iso": "20:50:28",
+        "age_s": 0.3,
+        "fresh": true,
+        "src_ip": "10.1.0.32",
+        "matched": true,
+        "fields": {
+          "vname": "bama",
+          "utc": "1780606228.80",
+          "mode": "MANUAL",
+          "mission": "true",
+          "helm": "DRIVE",
+          "deploy": "true",
+          "volt": "24.1",
+          "curr": "7.1",
+          "power": "186",
+          "batt": "OK",
+          "rc": "conn",
+          "failsafe": "false",
+          "deadman": "true",
+          "des_l": "43",
+          "des_r": "43",
+          "thr_l": "43",
+          "thr_r": "43",
+          "allstop": "false",
+          "rpi_t": "29.7",
+          "int_t": "34.7",
+          "int_kpa": "99.65",
+          "fix": "RTK_FIX",
+          "sats": "27",
+          "hdop": "0.91",
+          "lat": "37.4352697",
+          "lon": "24.9440893",
+          "spd": "0.28",
+          "hdg": "279.1",
+          "stale": "none"
+        },
+        "raw": "vname=bama,utc=1780606228.80,mode=MANUAL,mission=true,helm=DRIVE,deploy=true,volt=24.1,curr=7.1,power=186,batt=OK,rc=conn,failsafe=false,deadman=true,des_l=43,des_r=43,thr_l=43,thr_r=43,allstop=false,rpi_t=29.7,int_t=34.7,int_kpa=99.65,fix=RTK_FIX,sats=27,hdop=0.91,lat=37.4352697,lon=24.9440893,spd=0.28,hdg=279.1,stale=none"
+      },
+      "radio": {
+        "mac": "02:00:00:00:20:01",
+        "rssi": -71,
+        "rssi_ant": [
+          -74,
+          -72
+        ],
+        "mcs": 9,
+        "pl_ratio": 0.1,
+        "tx_retries": 12,
+        "tx_failed": 1,
+        "inactive": 92,
+        "tq": 150,
+        "hop_status": "direct",
+        "last_seen_msecs": 172,
+        "heard": true
+      }
+    },
+    {
+      "name": "chip",
+      "id": 33,
       "state": "frontseat_only",
       "fault_at": "backseat",
       "rungs": {
         "uplink": {
-          "ip": "192.168.1.134",
+          "ip": "10.1.0.33",
           "alive": true,
-          "rtt_ms": 6.584,
-          "avg_rtt_ms": 7.4,
+          "rtt_ms": 29.4,
+          "avg_rtt_ms": 29.4,
+          "loss_pct": 0.0
+        },
+        "frontseat": {
+          "ip": "10.33.1.1",
+          "alive": true,
+          "rtt_ms": 29.9,
+          "avg_rtt_ms": 29.9,
+          "loss_pct": 0.0
+        },
+        "backseat": {
+          "ip": "10.33.1.100",
+          "alive": false,
+          "rtt_ms": null,
+          "avg_rtt_ms": null,
+          "loss_pct": 0.0
+        }
+      },
+      "last_present_ts": null,
+      "last_present_iso": null,
+      "telemetry": {
+        "received_ts": 1780606228.3032284,
+        "received_iso": "20:50:28",
+        "age_s": 0.5,
+        "fresh": true,
+        "src_ip": "10.1.0.33",
+        "matched": true,
+        "fields": {
+          "vname": "chip",
+          "utc": "1780606228.80",
+          "mode": "NO_HELM",
+          "mission": "false",
+          "helm": "NONE",
+          "deploy": "false",
+          "volt": "25.0",
+          "curr": "3.2",
+          "power": "193",
+          "batt": "OK",
+          "rc": "conn",
+          "failsafe": "false",
+          "deadman": "false",
+          "des_l": "0",
+          "des_r": "0",
+          "thr_l": "0",
+          "thr_r": "0",
+          "allstop": "false",
+          "rpi_t": "32.5",
+          "int_t": "37.5",
+          "int_kpa": "100.33",
+          "fix": "RTK_FIX",
+          "sats": "22",
+          "hdop": "0.82",
+          "lat": "37.4353828",
+          "lon": "24.9467074",
+          "spd": "1.22",
+          "hdg": "337.8",
+          "stale": "none"
+        },
+        "raw": "vname=chip,utc=1780606228.80,mode=NO_HELM,mission=false,helm=NONE,deploy=false,volt=25.0,curr=3.2,power=193,batt=OK,rc=conn,failsafe=false,deadman=false,des_l=0,des_r=0,thr_l=0,thr_r=0,allstop=false,rpi_t=32.5,int_t=37.5,int_kpa=100.33,fix=RTK_FIX,sats=22,hdop=0.82,lat=37.4353828,lon=24.9467074,spd=1.22,hdg=337.8,stale=none"
+      },
+      "radio": {
+        "mac": "02:00:00:00:21:01",
+        "rssi": -58,
+        "rssi_ant": [
+          -62,
+          -59
+        ],
+        "mcs": 13,
+        "pl_ratio": 0.04,
+        "tx_retries": 4,
+        "tx_failed": 0,
+        "inactive": 118,
+        "tq": 205,
+        "hop_status": "direct",
+        "last_seen_msecs": 12,
+        "heard": true
+      }
+    },
+    {
+      "name": "dale",
+      "id": 34,
+      "state": "offline",
+      "fault_at": "uplink",
+      "rungs": {
+        "uplink": {
+          "ip": "10.1.0.34",
+          "alive": false,
+          "rtt_ms": null,
+          "avg_rtt_ms": null,
           "loss_pct": 0.0
         },
         "frontseat": {
           "ip": "10.34.1.1",
-          "alive": true,
-          "rtt_ms": 6.873,
-          "avg_rtt_ms": 7.3,
+          "alive": false,
+          "rtt_ms": null,
+          "avg_rtt_ms": null,
           "loss_pct": 0.0
         },
         "backseat": {
@@ -37,114 +325,188 @@
           "alive": false,
           "rtt_ms": null,
           "avg_rtt_ms": null,
-          "loss_pct": 100.0
+          "loss_pct": 0.0
         }
       },
       "last_present_ts": null,
       "last_present_iso": null,
-      "telemetry": null
+      "telemetry": null,
+      "radio": null
     },
     {
-      "name": "via",
-      "id": null,
-      "state": "offline",
-      "fault_at": "uplink",
-      "rungs": {
-        "uplink": {
-          "ip": "192.168.1.135",
-          "alive": false,
-          "rtt_ms": null,
-          "avg_rtt_ms": null,
-          "loss_pct": 100.0
-        },
-        "frontseat": {
-          "ip": "10.35.1.1",
-          "alive": false,
-          "rtt_ms": null,
-          "avg_rtt_ms": null,
-          "loss_pct": 100.0
-        },
-        "backseat": {
-          "ip": "10.35.1.100",
-          "alive": false,
-          "rtt_ms": null,
-          "avg_rtt_ms": null,
-          "loss_pct": 100.0
-        }
-      },
-      "last_present_ts": null,
-      "last_present_iso": null,
-      "telemetry": null
-    },
-    {
-      "name": "yip",
-      "id": null,
+      "name": "ewan",
+      "id": 35,
       "state": "present",
       "fault_at": null,
       "rungs": {
         "uplink": {
-          "ip": "192.168.1.132",
+          "ip": "10.1.0.35",
           "alive": true,
-          "rtt_ms": 5.441,
-          "avg_rtt_ms": 5.3,
+          "rtt_ms": 41.4,
+          "avg_rtt_ms": 41.4,
           "loss_pct": 0.0
         },
         "frontseat": {
-          "ip": "10.32.1.1",
+          "ip": "10.35.1.1",
           "alive": true,
-          "rtt_ms": 5.174,
-          "avg_rtt_ms": 5.3,
+          "rtt_ms": 41.9,
+          "avg_rtt_ms": 41.9,
           "loss_pct": 0.0
         },
         "backseat": {
-          "ip": "10.32.1.100",
+          "ip": "10.35.1.100",
           "alive": true,
-          "rtt_ms": 5.219,
-          "avg_rtt_ms": 5.3,
+          "rtt_ms": 42.4,
+          "avg_rtt_ms": 42.4,
           "loss_pct": 0.0
         }
       },
-      "last_present_ts": 1780594338.910744,
-      "last_present_iso": "13:32:18",
+      "last_present_ts": 1780606228.8032284,
+      "last_present_iso": "20:50:28",
       "telemetry": {
-        "received_ts": 1780594338.756415,
-        "received_iso": "13:32:18",
+        "received_ts": 1780606228.6032283,
+        "received_iso": "20:50:28",
         "age_s": 0.2,
         "fresh": true,
-        "src_ip": "192.168.1.132",
+        "src_ip": "10.1.0.35",
         "matched": true,
         "fields": {
-          "vname": "yip_fs",
-          "utc": "1780594338.75",
+          "vname": "ewan",
+          "utc": "1780606228.80",
           "mode": "NO_HELM",
           "mission": "false",
           "helm": "NONE",
           "deploy": "false",
-          "volt": "15.3",
-          "curr": "-0.2",
-          "power": "-2.3",
-          "batt": "LOW",
-          "rc": "disc",
+          "volt": "25.0",
+          "curr": "4.5",
+          "power": "172",
+          "batt": "OK",
+          "rc": "conn",
           "failsafe": "false",
-          "deadman": "true",
+          "deadman": "false",
           "des_l": "0",
           "des_r": "0",
           "thr_l": "0",
           "thr_r": "0",
           "allstop": "false",
-          "rpi_t": "54.5",
-          "int_t": "46.9",
-          "int_kpa": "101.77",
-          "fix": "NONE",
-          "sats": "2",
-          "hdop": "9999.00",
-          "lat": "42.3585768",
-          "lon": "-71.0875190",
-          "spd": "0.00",
-          "hdg": "0.0",
-          "stale": "helm"
+          "rpi_t": "29.0",
+          "int_t": "34.0",
+          "int_kpa": "100.38",
+          "fix": "RTK_FIX",
+          "sats": "22",
+          "hdop": "0.60",
+          "lat": "37.4341381",
+          "lon": "24.9449710",
+          "spd": "1.19",
+          "hdg": "282.3",
+          "stale": "none"
         },
-        "raw": "vname=yip_fs,utc=1780594338.75,mode=NO_HELM,mission=false,helm=NONE,deploy=false,volt=15.3,curr=-0.2,power=-2.3,batt=LOW,rc=disc,failsafe=false,deadman=true,des_l=0,des_r=0,thr_l=0,thr_r=0,allstop=false,rpi_t=54.5,int_t=46.9,int_kpa=101.77,fix=NONE,sats=2,hdop=9999.00,lat=42.3585768,lon=-71.0875190,spd=0.00,hdg=0.0,stale=helm"
+        "raw": "vname=ewan,utc=1780606228.80,mode=NO_HELM,mission=false,helm=NONE,deploy=false,volt=25.0,curr=4.5,power=172,batt=OK,rc=conn,failsafe=false,deadman=false,des_l=0,des_r=0,thr_l=0,thr_r=0,allstop=false,rpi_t=29.0,int_t=34.0,int_kpa=100.38,fix=RTK_FIX,sats=22,hdop=0.60,lat=37.4341381,lon=24.9449710,spd=1.19,hdg=282.3,stale=none"
+      },
+      "radio": {
+        "mac": "02:00:00:00:23:01",
+        "rssi": -52,
+        "rssi_ant": [
+          -53,
+          -56
+        ],
+        "mcs": 14,
+        "pl_ratio": 0.02,
+        "tx_retries": 2,
+        "tx_failed": 0,
+        "inactive": 112,
+        "tq": 240,
+        "hop_status": "direct",
+        "last_seen_msecs": 561,
+        "heard": true
+      }
+    },
+    {
+      "name": "flex",
+      "id": 36,
+      "state": "present",
+      "fault_at": null,
+      "rungs": {
+        "uplink": {
+          "ip": "10.1.0.36",
+          "alive": true,
+          "rtt_ms": 61.0,
+          "avg_rtt_ms": 61.0,
+          "loss_pct": 0.0
+        },
+        "frontseat": {
+          "ip": "10.36.1.1",
+          "alive": true,
+          "rtt_ms": 61.5,
+          "avg_rtt_ms": 61.5,
+          "loss_pct": 0.0
+        },
+        "backseat": {
+          "ip": "10.36.1.100",
+          "alive": true,
+          "rtt_ms": 62.0,
+          "avg_rtt_ms": 62.0,
+          "loss_pct": 0.0
+        }
+      },
+      "last_present_ts": 1780606228.8032284,
+      "last_present_iso": "20:50:28",
+      "telemetry": {
+        "received_ts": 1780606219.8032284,
+        "received_iso": "20:50:19",
+        "age_s": 9.0,
+        "fresh": false,
+        "src_ip": "10.1.0.36",
+        "matched": true,
+        "fields": {
+          "vname": "flex",
+          "utc": "1780606228.80",
+          "mode": "HOLD",
+          "mission": "false",
+          "helm": "PARK",
+          "deploy": "true",
+          "volt": "21.3",
+          "curr": "4.0",
+          "power": "119",
+          "batt": "LOW",
+          "rc": "conn",
+          "failsafe": "false",
+          "deadman": "false",
+          "des_l": "0",
+          "des_r": "0",
+          "thr_l": "0",
+          "thr_r": "0",
+          "allstop": "false",
+          "rpi_t": "25.7",
+          "int_t": "30.7",
+          "int_kpa": "100.50",
+          "fix": "RTK_FIX",
+          "sats": "26",
+          "hdop": "0.98",
+          "lat": "37.4344317",
+          "lon": "24.9446548",
+          "spd": "1.21",
+          "hdg": "64.9",
+          "stale": "none"
+        },
+        "raw": "vname=flex,utc=1780606228.80,mode=HOLD,mission=false,helm=PARK,deploy=true,volt=21.3,curr=4.0,power=119,batt=LOW,rc=conn,failsafe=false,deadman=false,des_l=0,des_r=0,thr_l=0,thr_r=0,allstop=false,rpi_t=25.7,int_t=30.7,int_kpa=100.50,fix=RTK_FIX,sats=26,hdop=0.98,lat=37.4344317,lon=24.9446548,spd=1.21,hdg=64.9,stale=none"
+      },
+      "radio": {
+        "mac": "02:00:00:00:24:01",
+        "rssi": -83,
+        "rssi_ant": [
+          -84,
+          -86
+        ],
+        "mcs": 4,
+        "pl_ratio": 0.28,
+        "tx_retries": 33,
+        "tx_failed": 6,
+        "inactive": 5,
+        "tq": 88,
+        "hop_status": "relay",
+        "last_seen_msecs": 526,
+        "heard": true
       }
     }
   ]

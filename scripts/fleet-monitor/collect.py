@@ -10,6 +10,13 @@ NOTHING runs on the boats for this -- it is pure external probing, so it keeps
 answering during boot, before any mission launches, and when all boat software
 is dead (which is exactly when you most want it).
 
+Subsystem C (optional) adds RF/mesh quality by polling ONLY the shoreside
+DoodleLabs radio's JSON-RPC API for its linkstate -- the shore radio's own
+station + mesh tables already list every boat radio it hears (RSSI, MCS,
+batman-adv TQ, direct/relay hop), so one HTTP call per poll yields shore->fleet
+link quality. Stations are joined to boats by MAC (filled in fleet.json at the
+site). It is independent of A and B and degrades quietly if the radio is down.
+
 Addressing is derived from BOAT_ID per
 documentation/01_fleet_and_network_reference.md (§4):
 
@@ -191,6 +198,30 @@ class Collector:
         self._by_uplink = {b["rung_ips"]["uplink"]: b for b in self.boats}
         self._telemetry = {}  # boat name -> {ts, src_ip, fields, raw, matched}
 
+        # --- Subsystem C: RF/mesh quality from the shore DoodleLabs radio ---
+        # We poll ONLY the shore radio's JSON-RPC API and read its linkstate;
+        # the shore radio's station + mesh tables already list every boat radio
+        # it hears, so one HTTP call per poll yields shore->fleet RF quality.
+        # Each station is joined back to a boat by MAC (filled in fleet.json at
+        # the site). Stdlib only -- no `requests`, no `pip` (see README §2).
+        rc = cfg.get("radio", {}) or {}
+        self.radio_enabled = bool(rc.get("enabled", False))
+        self.radio_api_ip = rc.get("api_ip", self.shore_radio_ip)
+        self.radio_user = rc.get("username", "user")
+        self.radio_pass = rc.get("password", "DoodleSmartRadio")
+        self.radio_interval = float(rc.get("poll_interval_s", 2.0))
+        self.radio_timeout = float(rc.get("timeout_s", 4.0))
+        self.radio_stale_s = float(rc.get("stale_s", 6.0))
+        # name -> mac, only for boats whose MAC is actually filled in. A blank
+        # entry is simply absent here, so the boat reads "no RF data" and its
+        # station (if heard) surfaces as unmapped until the MAC is supplied.
+        self.mac_by_name = {n: m.lower() for n, m in (rc.get("macs") or {}).items() if m}
+        self._radio_token = None         # cached ubus session id (re-login on loss)
+        self._radio_stations = {}        # mac -> merged station/mesh record
+        self._radio_summary = {}         # shore-radio's own sysinfo/noise/channel
+        self._radio_ts = None            # epoch of last good poll
+        self._radio_ok = False           # did the last poll reach + parse the radio
+
     def _hist_for(self, ip: str) -> TargetHistory:
         if ip not in self._hist:
             self._hist[ip] = TargetHistory(self.window)
@@ -242,6 +273,167 @@ class Collector:
             "raw": t["raw"],
         }
 
+    # -----------------------------------------------------------------------
+    # Subsystem C: shore-radio linkstate poller (JSON-RPC over ubus)
+    # -----------------------------------------------------------------------
+
+    def _radio_poll_blocking(self):
+        """One JSON-RPC round-trip to the shore radio: log in if needed, then
+        read /tmp/linkstate_current.json. Returns the parsed linkstate dict, or
+        None on any failure (and drops the cached token so we re-login next
+        time). Pure stdlib (urllib + ssl) to honor the no-`pip` rule; the radio
+        serves a self-signed cert, so certificate verification is disabled --
+        the link is encrypted but the radio is trusted by network position."""
+        import urllib.request
+        import ssl
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        url = f"https://{self.radio_api_ip}/ubus"
+
+        def rpc(params):
+            body = json.dumps({"jsonrpc": "2.0", "id": 1,
+                               "method": "call", "params": params}).encode()
+            req = urllib.request.Request(
+                url, data=body, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=self.radio_timeout, context=ctx) as r:
+                return json.loads(r.read().decode())
+
+        try:
+            if not self._radio_token:
+                login = rpc(["0" * 32, "session", "login",
+                             {"username": self.radio_user, "password": self.radio_pass}])
+                self._radio_token = login["result"][1]["ubus_rpc_session"]
+
+            resp = rpc([self._radio_token, "file", "read",
+                        {"path": "/tmp/linkstate_current.json", "base64": 0}])
+            code = resp.get("result", [99])[0]
+            if code != 0:                      # 6=perm denied / session expired etc.
+                self._radio_token = None       # force a fresh login next poll
+                return None
+            return json.loads(resp["result"][1]["data"])
+        except Exception:
+            self._radio_token = None
+            return None
+
+    @staticmethod
+    def _to_float(v):
+        try:
+            return round(float(v), 1)
+        except (TypeError, ValueError):
+            return None
+
+    def _parse_linkstate(self, ls: dict):
+        """Split a linkstate blob into (per-mac station records, shore summary).
+
+        Stations come from two arrays keyed by the same MAC: `sta_stats` (PHY:
+        rssi, per-antenna rssi, mcs, packet-loss ratio, tx retries/failures) and
+        `mesh_stats` (batman-adv: tq 0-255, direct/relay hop, last-seen). We
+        merge them by MAC into one record per neighbor."""
+        stations = {}
+        for s in ls.get("sta_stats", []) or []:
+            mac = str(s.get("mac", "")).lower()
+            if not mac:
+                continue
+            pl = s.get("pl_ratio")
+            stations[mac] = {
+                "mac": mac,
+                "rssi": s.get("rssi"),
+                "rssi_ant": s.get("rssi_ant"),
+                "mcs": s.get("mcs"),
+                "pl_ratio": round(pl, 4) if isinstance(pl, (int, float)) else None,
+                "tx_retries": s.get("tx_retries"),
+                "tx_failed": s.get("tx_failed"),
+                "inactive": s.get("inactive"),
+            }
+        for m in ls.get("mesh_stats", []) or []:
+            mac = str(m.get("orig_address", "")).lower()
+            if not mac:
+                continue
+            rec = stations.setdefault(mac, {"mac": mac})
+            rec["tq"] = m.get("tq")
+            rec["hop_status"] = m.get("hop_status")
+            rec["last_seen_msecs"] = m.get("last_seen_msecs")
+
+        si = ls.get("sysinfo", {}) or {}
+        cpu = si.get("cpu_load")
+        # OpenWrt reports load average in 1<<16 fixed point; scale to a float.
+        load = ([round(x / 65536.0, 2) for x in cpu]
+                if isinstance(cpu, list) else None)
+        summary = {
+            "oper_chan": ls.get("oper_chan"),
+            "oper_freq": ls.get("oper_freq"),
+            "chan_width": ls.get("chan_width"),
+            "noise": self._to_float(ls.get("noise")),
+            "activity": ls.get("activity"),
+            "lna_status": ls.get("lna_status"),
+            "cpu_load": load,
+            "freemem": si.get("freemem"),
+        }
+        return stations, summary
+
+    async def _do_radio_poll(self):
+        """Run one (blocking) radio poll in a thread and stash the result."""
+        loop = asyncio.get_event_loop()
+        ls = await loop.run_in_executor(None, self._radio_poll_blocking)
+        if ls is None:
+            self._radio_ok = False
+            return
+        self._radio_stations, self._radio_summary = self._parse_linkstate(ls)
+        self._radio_ts = time.time()
+        self._radio_ok = True
+
+    async def _radio_loop(self):
+        """Poll the shore radio on its own cadence, independent of the ping
+        sweep. A dead/unreachable radio just leaves the last data going stale --
+        it never disturbs Subsystems A or B."""
+        while True:
+            t0 = time.time()
+            try:
+                await self._do_radio_poll()
+            except Exception as e:
+                self._radio_ok = False
+                print(f"[{_iso(time.time())}] radio poll error: {e}", file=sys.stderr)
+            await asyncio.sleep(max(0.5, self.radio_interval - (time.time() - t0)))
+
+    def _radio_block(self, now: float):
+        """Assemble the snapshot's top-level `radio` object and a name->record
+        map for the per-boat merge. Returns ({}, {}) cheaply when disabled."""
+        if not self.radio_enabled:
+            return {"enabled": False}, {}
+
+        age = round(now - self._radio_ts, 1) if self._radio_ts else None
+        ok = self._radio_ok and self._radio_ts is not None
+        fresh = bool(ok and age is not None and age < self.radio_stale_s)
+        stations = self._radio_stations or {}
+
+        # Join each filled-in MAC to its boat; collect the leftovers.
+        per_boat, claimed = {}, set()
+        for name, mac in self.mac_by_name.items():
+            rec = stations.get(mac)
+            if rec:
+                claimed.add(mac)
+                per_boat[name] = {**rec, "heard": True}
+            else:
+                per_boat[name] = None          # mapped, but not heard right now
+        unmapped = [rec for mac, rec in stations.items() if mac not in claimed]
+
+        block = {
+            "enabled": True,
+            "ok": ok,
+            "fresh": fresh,
+            "api_ip": self.radio_api_ip,
+            "polled_ts": self._radio_ts,
+            "polled_iso": _iso(self._radio_ts),
+            "age_s": age,
+            "station_count": len(stations),
+            "mapped_count": sum(1 for v in per_boat.values() if v),
+            "unmapped": unmapped,
+        }
+        block.update(self._radio_summary or {})
+        return block, per_boat
+
     async def sweep(self) -> dict:
         # Build the full probe set (shore radio + every rung of every boat) and
         # fire them all concurrently -- one cycle is ~1 + 3*len(boats) pings.
@@ -256,6 +448,7 @@ class Collector:
         now = time.time()
         shore = keyed[("shore", "shore_radio")]
         shore_up = shore["alive"]
+        radio_block, radio_by_boat = self._radio_block(now)
 
         boats_out = []
         for b in self.boats:
@@ -291,6 +484,7 @@ class Collector:
                 "last_present_ts": self._last_present.get(name),
                 "last_present_iso": _iso(self._last_present.get(name)),
                 "telemetry": self._telemetry_for(name, now),  # Subsystem B, or None
+                "radio": radio_by_boat.get(name),             # Subsystem C, or None
             })
 
         return {
@@ -302,6 +496,7 @@ class Collector:
             "telemetry_count": sum(
                 1 for b in boats_out
                 if b["telemetry"] and b["telemetry"]["fresh"]),
+            "radio": radio_block,                             # Subsystem C summary
             "boats": boats_out,
         }
 
@@ -331,6 +526,12 @@ class Collector:
 
     async def run(self, once: bool, quiet: bool):
         await self.start_receiver()  # B listener runs for the process lifetime
+        if self.radio_enabled:
+            # Prime once so the very first sweep (and --once) already carries RF
+            # data; then let it refresh on its own task for the continuous loop.
+            await self._do_radio_poll()
+            if not once:
+                asyncio.ensure_future(self._radio_loop())
         while True:
             t0 = time.time()
             try:
@@ -379,11 +580,20 @@ def _render_table(snap: dict) -> str:
     shore = "up" if snap["shore_ok"] else "DOWN"
     sr = snap["shore_radio"]
     srtt = f'{sr["rtt_ms"]}ms' if sr["rtt_ms"] is not None else "--"
+    radio = snap.get("radio") or {}
+    radio_note = ""
+    if radio.get("enabled"):
+        if radio.get("ok"):
+            rn = radio.get("noise")
+            radio_note = (f'  radio {"fresh" if radio.get("fresh") else "STALE"}'
+                          f' (noise {rn}dBm, {radio.get("station_count",0)} sta)')
+        else:
+            radio_note = "  radio UNREACHABLE"
     lines.append(f'[{snap["iso"]}] shore radio {shore} ({srtt})  '
                  f'{sum(1 for b in snap["boats"] if b["state"]=="present")}/'
-                 f'{len(snap["boats"])} present')
+                 f'{len(snap["boats"])} present{radio_note}')
     lines.append(f'  {"boat":6} {"state":15} {"fault":10} '
-                 f'{"uplink":>10} {"backseat":>10}  telemetry')
+                 f'{"uplink":>10} {"backseat":>10}  {"rf":>14}  telemetry')
     for b in snap["boats"]:
         up = b["rungs"]["uplink"]
         bs = b["rungs"]["backseat"]
@@ -393,8 +603,23 @@ def _render_table(snap: dict) -> str:
         bs_s = f'{bs["rtt_ms"]}ms' if bs["rtt_ms"] is not None else "--"
         lines.append(f'  {_GLYPH.get(b["state"],"?")}{b["name"]:5} '
                      f'{b["state"]:15} {str(b["fault_at"] or ""):10} '
-                     f'{up_s:>10} {bs_s:>10}  {_telemetry_cell(b["telemetry"])}')
+                     f'{up_s:>10} {bs_s:>10}  {_radio_cell(b.get("radio")):>14}  '
+                     f'{_telemetry_cell(b["telemetry"])}')
     return "\n".join(lines)
+
+
+def _radio_cell(r) -> str:
+    """Compact C summary for the live table: RSSI + batman TQ, or a dash."""
+    if not r:
+        return "-"
+    rssi = r.get("rssi")
+    tq = r.get("tq")
+    parts = []
+    if rssi is not None:
+        parts.append(f'{rssi}dBm')
+    if tq is not None:
+        parts.append(f'tq{tq}')
+    return " ".join(parts) if parts else "heard"
 
 
 def _telemetry_cell(t) -> str:

@@ -42,6 +42,13 @@ def backseat_ip(n):  return f"10.{n}.1.100"
 SHORE_RADIO_IP = "10.1.0.3"
 LOW_VOLT = 22.0
 MODES = ["AUTO", "HOLD", "MANUAL", "NO_HELM", "ALLSTOP"]
+RADIO_STALE_S = 6.0
+
+
+def _synth_mac(bid):
+    """Deterministic fake boat-radio MAC, used when fleet.json has no real MAC
+    filled in yet -- lets the dashboard's Radio tab populate during dev."""
+    return f"02:00:00:00:{bid & 0xff:02x}:01"
 
 
 def _iso(ts):
@@ -74,6 +81,16 @@ class SimBoat:
         self.int_kpa = rng.uniform(99.5, 101.0)
         self.lat = 37.4360 + rng.uniform(-0.002, 0.002)   # Greece-ish
         self.lon = 24.9460 + rng.uniform(-0.002, 0.002)
+        # RF / mesh (Subsystem C) -- shore radio's view of this boat's radio
+        self.mac = None               # filled by main(): real map or synthesized
+        self.rssi = rng.uniform(-58, -47)
+        self.mcs = rng.randint(11, 15)
+        self.tq = rng.randint(210, 255)
+        self.hop = "direct"
+        self.pl_ratio = rng.uniform(0.0, 0.06)
+        self.tx_retries = rng.randint(0, 4)
+        self.tx_failed = 0
+        self.inactive = rng.randint(0, 120)
 
     # -- dynamic evolution -------------------------------------------------
     def step(self, dt):
@@ -108,6 +125,38 @@ class SimBoat:
             self.tele_age = self.tele_age + dt if self.tele_age > dt else 0.0
         if r() < 0.008:
             self.tele_on = not self.tele_on
+        # RF random walk; MCS / TQ / loss all track signal strength (q: 0..1).
+        self.rssi = max(-92.0, min(-40.0, self.rssi + self.rng.uniform(-2.5, 2.5)))
+        q = (self.rssi + 90.0) / 50.0
+        self.mcs = max(0, min(15, int(round(q * 15 + self.rng.uniform(-1.5, 1.5)))))
+        self.tq = max(0, min(255, int(round(q * 255 + self.rng.uniform(-25, 25)))))
+        self.pl_ratio = max(0.0, min(0.9, (1 - q) * 0.4 + self.rng.uniform(-0.05, 0.05)))
+        self.tx_retries = self.rng.randint(0, int((1 - q) * 40) + 1)
+        self.tx_failed = self.rng.randint(0, int((1 - q) * 8))
+        self.inactive = self.rng.randint(0, 60)
+        # weak links sometimes route through another boat (multi-hop)
+        self.hop = "relay" if (q < 0.4 and r() < 0.5) else "direct"
+
+    def radio_record(self):
+        """Shore radio's station+mesh record for this boat, or None when the
+        boat's link is down (the shore radio simply doesn't hear it)."""
+        if not self.link_up:
+            return None
+        rssi = round(self.rssi)
+        return {
+            "mac": self.mac,
+            "rssi": rssi,
+            "rssi_ant": [rssi - self.rng.randint(0, 4), rssi - self.rng.randint(0, 4)],
+            "mcs": int(self.mcs),
+            "pl_ratio": round(self.pl_ratio, 4),
+            "tx_retries": int(self.tx_retries),
+            "tx_failed": int(self.tx_failed),
+            "inactive": int(self.inactive),
+            "tq": int(self.tq),
+            "hop_status": self.hop,
+            "last_seen_msecs": self.rng.randint(0, 800),
+            "heard": True,
+        }
 
     # -- derived autonomy fields from mode --------------------------------
     def _autonomy(self):
@@ -156,6 +205,34 @@ class SimBoat:
 
 
 # ---------------------------------------------------------------------------
+# Simulated shore radio (Subsystem C source)
+# ---------------------------------------------------------------------------
+
+class SimShoreRadio:
+    """The shoreside DoodleLabs radio's own state: noise floor, channel
+    activity, and a little system load. `ok` flips occasionally to exercise the
+    'radio API unreachable / stale' path in the dashboard."""
+    def __init__(self, rng):
+        self.rng = rng
+        self.noise = rng.uniform(-99, -94)
+        self.activity = 0
+        self.cpu = [0.12, 0.10, 0.09]
+        self.freemem = 14_700_000
+        self.ok = True
+
+    def step(self, dt):
+        self.noise = max(-103.0, min(-80.0, self.noise + self.rng.uniform(-1.5, 1.5)))
+        self.activity = 1 if self.rng.random() < 0.5 else 0
+        self.cpu = [round(max(0.02, c + self.rng.uniform(-0.05, 0.05)), 2) for c in self.cpu]
+        self.freemem = int(max(10_000_000, min(16_000_000,
+                          self.freemem + self.rng.uniform(-200_000, 200_000))))
+        if self.ok and self.rng.random() < 0.003:        # rare API blip
+            self.ok = False
+        elif not self.ok and self.rng.random() < 0.5:
+            self.ok = True
+
+
+# ---------------------------------------------------------------------------
 # Snapshot assembly (must match collect.py's schema exactly)
 # ---------------------------------------------------------------------------
 
@@ -166,8 +243,54 @@ def _rung(ip, alive, rtt, loss):
             "loss_pct": loss if alive else 0.0}
 
 
-def build_snapshot(boats, shore_ok, tele_port, tele_stale_s, last_present):
+def _radio_block(boats, shore_radio, radio_enabled, mapped_names, now):
+    """Mirror collect.py's Collector._radio_block output: a top-level radio
+    summary plus a name->record map. Boats whose name is in `mapped_names` are
+    attributed to a boat; any others the radio hears land in `unmapped`."""
+    if not radio_enabled:
+        return {"enabled": False}, {}
+
+    ok = shore_radio.ok
+    polled = now - (0.4 if ok else 7.5)        # not ok -> data goes stale
+    age = round(now - polled, 1)
+    per_boat, unmapped, station_count = {}, [], 0
+    for b in boats:
+        rec = b.radio_record()
+        if rec:
+            station_count += 1
+        if b.name in mapped_names:
+            per_boat[b.name] = rec
+        elif rec:
+            unmapped.append(rec)
+
+    block = {
+        "enabled": True,
+        "ok": ok,
+        "fresh": bool(ok and age < RADIO_STALE_S),
+        "api_ip": SHORE_RADIO_IP,
+        "polled_ts": polled,
+        "polled_iso": _iso(polled),
+        "age_s": age,
+        "station_count": station_count,
+        "mapped_count": sum(1 for v in per_boat.values() if v),
+        "unmapped": unmapped,
+        "oper_chan": 13,
+        "oper_freq": 2472,
+        "chan_width": "20",
+        "noise": round(shore_radio.noise, 1),
+        "activity": shore_radio.activity,
+        "lna_status": "1",
+        "cpu_load": shore_radio.cpu,
+        "freemem": shore_radio.freemem,
+    }
+    return block, per_boat
+
+
+def build_snapshot(boats, shore_ok, tele_port, tele_stale_s, last_present,
+                   shore_radio=None, radio_enabled=False, mapped_names=frozenset()):
     now = time.time()
+    radio_block, radio_by_boat = _radio_block(
+        boats, shore_radio, radio_enabled, mapped_names, now)
     boats_out = []
     for b in boats:
         up, fs, bs = b.link_up, (b.link_up and b.fwd_ok), b.backseat_up and b.link_up
@@ -207,6 +330,7 @@ def build_snapshot(boats, shore_ok, tele_port, tele_stale_s, last_present):
             "last_present_ts": last_present.get(b.name),
             "last_present_iso": _iso(last_present.get(b.name)),
             "telemetry": tele,
+            "radio": radio_by_boat.get(b.name),
         })
 
     return {
@@ -216,6 +340,7 @@ def build_snapshot(boats, shore_ok, tele_port, tele_stale_s, last_present):
         "telemetry_port": tele_port,
         "telemetry_count": sum(1 for x in boats_out
                                if x["telemetry"] and x["telemetry"]["fresh"]),
+        "radio": radio_block,
         "boats": boats_out,
     }
 
@@ -254,6 +379,32 @@ def load_roster(path):
                 (34, "dale"), (35, "ewan"), (36, "flex")]
 
 
+def load_radio_cfg(path):
+    """Return (enabled, name->mac map) from fleet.json's radio block. Mirrors
+    collect.py: only non-blank MACs count as 'mapped'."""
+    try:
+        rc = json.load(open(path)).get("radio", {}) or {}
+        macs = {n: m.lower() for n, m in (rc.get("macs") or {}).items() if m}
+        return bool(rc.get("enabled", True)), macs
+    except Exception:
+        return True, {}
+
+
+def assign_macs(boats, mapped):
+    """Give every boat a MAC and decide which names are 'mapped'. If fleet.json
+    has real MACs, honor them exactly (unfilled boats stay unmapped, exercising
+    the dashboard's 'fill the MAC' path). If NONE are filled (the default), fall
+    back to synthesized MACs for all boats so the Radio tab is populated in dev.
+    Returns the set of mapped boat names."""
+    if mapped:
+        for b in boats:
+            b.mac = mapped.get(b.name) or _synth_mac(b.id)
+        return set(mapped)
+    for b in boats:                       # dev fallback: synthesize + map all
+        b.mac = _synth_mac(b.id)
+    return {b.name for b in boats}
+
+
 def apply_static(boats):
     """A fixed, varied tableau -- one boat per interesting case. Great for
     building and screenshotting the dashboard deterministically."""
@@ -275,6 +426,13 @@ def apply_static(boats):
     setb(4, link_up=True, backseat_up=True, mode="NO_HELM", volt=25.0, tele_on=True, tele_age=0.2)
     # 5: low battery + telemetry stale while still pingable
     setb(5, link_up=True, backseat_up=True, mode="HOLD", volt=21.3, tele_on=True, tele_age=9.0)
+    # RF variety for the Radio tab: strong/direct, weak/relay, mid, offline...
+    setb(0, rssi=-48, mcs=15, tq=250, hop="direct", pl_ratio=0.01, tx_retries=1, tx_failed=0)
+    setb(1, rssi=-71, mcs=9,  tq=150, hop="direct", pl_ratio=0.10, tx_retries=12, tx_failed=1)
+    setb(2, rssi=-58, mcs=13, tq=205, hop="direct", pl_ratio=0.04, tx_retries=4, tx_failed=0)
+    setb(3, rssi=-90, mcs=0,  tq=0,   hop="direct")   # offline -> not heard anyway
+    setb(4, rssi=-52, mcs=14, tq=240, hop="direct", pl_ratio=0.02, tx_retries=2, tx_failed=0)
+    setb(5, rssi=-83, mcs=4,  tq=88,  hop="relay",  pl_ratio=0.28, tx_retries=33, tx_failed=6)
 
 
 # ---------------------------------------------------------------------------
@@ -300,6 +458,9 @@ def main():
     rng = random.Random(args.seed)
     roster = load_roster(args.config)
     boats = [SimBoat(bid, name, rng) for bid, name in roster]
+    radio_enabled, mapped = load_radio_cfg(args.config)
+    mapped_names = assign_macs(boats, mapped)
+    shore_radio = SimShoreRadio(rng)
     if args.static:
         apply_static(boats)
 
@@ -324,9 +485,13 @@ def main():
                     shore_ok = True
                 for b in boats:
                     b.step(args.interval)
+                shore_radio.step(args.interval)
 
             snap = build_snapshot(boats, shore_ok, args.telemetry_port,
-                                  args.telemetry_stale_s, last_present)
+                                  args.telemetry_stale_s, last_present,
+                                  shore_radio=shore_radio,
+                                  radio_enabled=radio_enabled,
+                                  mapped_names=mapped_names)
             write_snapshot(args.snapshot, snap)
 
             if sock:
