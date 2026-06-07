@@ -1,0 +1,19 @@
+
+get_robot_info.sh replacement for get_heron_info.sh
+
+Largely the same. I thought about removing the return point functionality
+but left it there for now.
+
+Changes:
+
+--TYPE, -T
+  will return either M300 or BBOAT
+--type, -t
+  will return either "heron or "blueboat" as before
+
+This gives us the option of setting XMODE directly to the result of
+get_robot_info.sh. M300 and BBOAT are the values used pervasively in
+many of the meta_ files, so I wanted to leave this unchanged.
+
+If the IP Address is not recognized as one of our robots, the script
+will immediatly exit with code 4. 
