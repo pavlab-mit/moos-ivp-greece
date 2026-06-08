@@ -175,7 +175,7 @@
   .meter { display:inline-flex; align-items:center; gap:9px; }
   .meter .track { width:62px; height:7px; border-radius:4px; background:var(--panel2);
     overflow:hidden; flex:none; }
-  .meter .fill { height:100%; border-radius:4px; }
+  .meter .fill { display:block; height:100%; border-radius:4px; }
   .fill.good{background:var(--green);} .fill.mid{background:var(--yellow);} .fill.bad{background:var(--red);}
   .meter .mv { font-variant-numeric:tabular-nums; color:var(--text2); min-width:54px; }
 
@@ -194,7 +194,7 @@
 </head>
 <body>
 <header>
-  <h1>Fleet Monitor <span class="sub">· Greece</span></h1>
+  <h1>Fleet Monitor <span class="sub" id="sitename"></span></h1>
   <nav class="tabs" id="tabs">
     <button class="tab active" data-view="fleet">Fleet</button>
     <button class="tab" data-view="radio">Radio</button>
@@ -358,7 +358,7 @@ function renderRadio(snap) {
   const r = snap.radio || {};
   if (!r.enabled) {
     el.innerHTML = `<div class="muted-note">Radio subsystem is off. Set
-      <code>radio.enabled: true</code> in fleet.json to pull RF/mesh stats from
+      <code>radio.enabled: true</code> in the site config to pull RF/mesh stats from
       the shore radio.</div>`;
     return;
   }
@@ -372,6 +372,7 @@ function renderRadio(snap) {
     <div class="shore-panel">
       <h2>Shore radio <span class="tag ${tag}">${esc(txt)}</span>
         <span style="color:var(--muted);font-weight:400;font-size:12px">${esc(r.api_ip||"")} · polled ${esc(r.polled_iso||"?")}</span></h2>
+      ${(!r.ok && r.last_error) ? `<div style="color:var(--red);font-size:12px;margin:-4px 0 8px">${esc(r.last_error)}</div>` : ""}
       <div class="shore-stats">
         <div class="s">noise floor<b>${r.noise!=null?esc(r.noise)+' <span class="u">dBm</span>':'—'}</b></div>
         <div class="s">channel<b>${r.oper_chan!=null?esc(r.oper_chan):'—'} <span class="u">${r.oper_freq!=null?'· '+esc(r.oper_freq)+' MHz':''} ${r.chan_width?'· '+esc(r.chan_width)+' MHz BW':''}</span></b></div>
@@ -419,7 +420,7 @@ function renderRadio(snap) {
       <td class="num">${s.tq!=null?s.tq+"/255":"—"}</td>
       <td class="num">${s.mcs!=null?esc(s.mcs):"—"}</td></tr>`).join("");
     unmapped = `<div class="section-note">Heard but unmapped — add these MACs to
-      <code>radio.macs</code> in fleet.json to attribute them to boats:</div>
+      <code>radio.macs</code> in the site config to attribute them to boats:</div>
       <table class="rtable"><thead><tr><th>MAC</th><th>RSSI</th><th>mesh TQ</th><th>MCS</th></tr></thead>
       <tbody>${u}</tbody></table>`;
   }
@@ -427,6 +428,11 @@ function renderRadio(snap) {
 }
 
 function render(snap) {
+  // site label (from the active config: "Greece", "MIT Pavlab", ...)
+  const site = snap.site || "";
+  document.getElementById("sitename").textContent = site ? "· " + site : "";
+  document.title = site ? `Fleet Monitor — ${site}` : "Fleet Monitor";
+
   // summary bar (Fleet/A+B only — radio-subsystem health lives on the Radio tab)
   const boats = snap.boats || [];
   const present = boats.filter(b => b.state === "present").length;

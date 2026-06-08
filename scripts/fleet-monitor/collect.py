@@ -177,6 +177,9 @@ async def ping_once(ip: str, timeout_s: float):
 
 class Collector:
     def __init__(self, cfg: dict):
+        # Human-readable site label (e.g. "Greece", "MIT Pavlab"); flows into
+        # the snapshot so the dashboard can title itself from the active config.
+        self.site = cfg.get("site", "")
         self.shore_radio_ip = cfg.get("shore_radio_ip", "10.1.0.3")
         self.interval = float(cfg.get("ping_interval_s", 2.0))
         self.timeout = float(cfg.get("ping_timeout_s", 1.0))
@@ -212,6 +215,9 @@ class Collector:
         self.radio_interval = float(rc.get("poll_interval_s", 2.0))
         self.radio_timeout = float(rc.get("timeout_s", 4.0))
         self.radio_stale_s = float(rc.get("stale_s", 6.0))
+        # Mesh radio interface, used only by the iwinfo fallback (firmware that
+        # doesn't generate /tmp/linkstate_current.json -- e.g. older pavlab units).
+        self.radio_mesh_dev = rc.get("mesh_device", "wlan0")
         # name -> mac, only for boats whose MAC is actually filled in. A blank
         # entry is simply absent here, so the boat reads "no RF data" and its
         # station (if heard) surfaces as unmapped until the MAC is supplied.
@@ -221,6 +227,8 @@ class Collector:
         self._radio_summary = {}         # shore-radio's own sysinfo/noise/channel
         self._radio_ts = None            # epoch of last good poll
         self._radio_ok = False           # did the last poll reach + parse the radio
+        self._radio_err = None           # human-readable reason the last poll failed
+        self._radio_err_logged = None    # last error already printed (throttle stderr)
 
     def _hist_for(self, ip: str) -> TargetHistory:
         if ip not in self._hist:
@@ -285,6 +293,7 @@ class Collector:
         serves a self-signed cert, so certificate verification is disabled --
         the link is encrypted but the radio is trusted by network position."""
         import urllib.request
+        import urllib.error
         import ssl
 
         ctx = ssl.create_default_context()
@@ -304,18 +313,159 @@ class Collector:
             if not self._radio_token:
                 login = rpc(["0" * 32, "session", "login",
                              {"username": self.radio_user, "password": self.radio_pass}])
-                self._radio_token = login["result"][1]["ubus_rpc_session"]
+                if "error" in login:           # JSON-RPC level error
+                    self._radio_err = f"ubus login error: {login['error'].get('message', '?')}"
+                    return None
+                res = login.get("result")
+                # ubus 'call' returns [code, data]; 0 == success, 6 == access denied.
+                if not isinstance(res, list) or not res or res[0] != 0 or len(res) < 2:
+                    code = res[0] if isinstance(res, list) and res else "?"
+                    self._radio_err = (f"login rejected (ubus code {code}) -- check radio "
+                                       f"username/password (got user={self.radio_user!r})")
+                    return None
+                self._radio_token = res[1].get("ubus_rpc_session")
+                if not self._radio_token:
+                    self._radio_err = "login succeeded but no session token in response"
+                    return None
 
             resp = rpc([self._radio_token, "file", "read",
                         {"path": "/tmp/linkstate_current.json", "base64": 0}])
-            code = resp.get("result", [99])[0]
-            if code != 0:                      # 6=perm denied / session expired etc.
-                self._radio_token = None       # force a fresh login next poll
+            if "error" in resp:
+                self._radio_token = None
+                self._radio_err = f"ubus file.read error: {resp['error'].get('message', '?')}"
                 return None
-            return json.loads(resp["result"][1]["data"])
-        except Exception:
+            res = resp.get("result")
+            code = res[0] if isinstance(res, list) and res else 99
+            if code == 0:
+                out = json.loads(res[1]["data"])
+            elif code == 4:
+                # No consolidated linkstate file (older firmware, e.g. pavlab):
+                # synthesize an equivalent from iwinfo. Sets _radio_err itself on
+                # failure; returns the linkstate-shaped dict on success.
+                out = self._linkstate_via_iwinfo(rpc)
+                if out is None:
+                    self._radio_token = None
+                    return None
+            elif code == 6:
+                self._radio_token = None
+                self._radio_err = (f"file.read denied (ubus code 6) for user={self.radio_user!r} "
+                                   "-- account lacks file-read ACL")
+                return None
+            else:
+                self._radio_token = None
+                self._radio_err = f"file.read /tmp/linkstate_current.json failed (ubus code {code})"
+                return None
+            self._radio_err = None             # cleared on success
+            return out
+        except urllib.error.HTTPError as e:
             self._radio_token = None
+            self._radio_err = f"HTTP {e.code} from {url} (is rpcd / uhttpd-mod-ubus enabled?)"
             return None
+        except urllib.error.URLError as e:
+            self._radio_token = None
+            self._radio_err = f"cannot reach {url}: {e.reason} (HTTPS not served / firewalled?)"
+            return None
+        except ssl.SSLError as e:
+            self._radio_token = None
+            self._radio_err = f"TLS error to {url}: {e}"
+            return None
+        except Exception as e:
+            self._radio_token = None
+            self._radio_err = f"{type(e).__name__}: {e}"
+            return None
+
+    def _linkstate_via_iwinfo(self, rpc):
+        """Build a linkstate-shaped dict from iwinfo, for radios that don't
+        generate /tmp/linkstate_current.json (older Doodle Labs firmware). Gives
+        per-neighbor PHY stats (RSSI, per-antenna RSSI, MCS, tx retries/failed)
+        plus a shore summary (noise, channel/freq, load, free memory), and -- if
+        batctl is present -- batman-adv mesh TQ and direct/relay hop. Returns a
+        dict shaped for _parse_linkstate, or None (and sets _radio_err) on
+        failure."""
+        dev = self.radio_mesh_dev
+
+        def call(obj, method, args):
+            r = rpc([self._radio_token, obj, method, args])
+            res = r.get("result")
+            if "error" in r or not (isinstance(res, list) and len(res) > 1 and res[0] == 0):
+                return None
+            return res[1]
+
+        assoc = call("iwinfo", "assoclist", {"device": dev})
+        if assoc is None:
+            self._radio_err = (f"no linkstate file, and iwinfo assoclist(device={dev!r}) failed "
+                               "-- check radio.mesh_device")
+            return None
+
+        sta_stats, noise = [], None
+        for s in assoc.get("results", []) or []:
+            mac = str(s.get("mac", "")).lower()
+            if not mac:
+                continue
+            if noise is None:
+                noise = s.get("noise")
+            tx = s.get("tx") or {}
+            sta_stats.append({
+                "mac": mac,
+                "rssi": s.get("signal"),
+                "rssi_ant": s.get("signal_ant"),
+                "mcs": (s.get("rx") or {}).get("mcs"),
+                "pl_ratio": None,              # not derivable from iwinfo
+                "tx_retries": tx.get("retries"),
+                "tx_failed": tx.get("failed"),
+                "inactive": s.get("inactive"),
+            })
+
+        ls = {"sta_stats": sta_stats, "mesh_stats": self._batctl_originators(rpc),
+              "noise": noise}
+
+        info = call("iwinfo", "info", {"device": dev})   # channel / frequency
+        if info:
+            ls["oper_chan"] = info.get("channel")
+            ls["oper_freq"] = info.get("frequency")
+            if ls["noise"] is None:
+                ls["noise"] = info.get("noise")
+
+        sysi = call("system", "info", {})                # load / free memory
+        if sysi:
+            ls["sysinfo"] = {"freemem": (sysi.get("memory") or {}).get("free"),
+                             "cpu_load": sysi.get("load")}
+        return ls
+
+    # batctl originator line: "* <orig> <sec>s (<tq>) <nexthop> [<if>]". The
+    # leading '*' marks the selected route; alternate-route lines have no
+    # originator MAC at the start, so this anchored pattern skips them.
+    _BATCTL_RE = re.compile(
+        r"^[\s*]*([0-9a-fA-F:]{17})\s+([\d.]+)s\s+\((\d+)\)\s+([0-9a-fA-F:]{17})")
+
+    def _batctl_originators(self, rpc):
+        """Mesh TQ / hop via `batctl o` (best-effort). batman-adv has no ubus
+        object on this firmware, so we shell out through file.exec and parse the
+        originator table. Returns mesh_stats records (orig_address, tq 0-255,
+        hop_status, last_seen_msecs) for _parse_linkstate, or [] if batctl is
+        absent/denied -- in which case TQ/hop simply read '-' on the dashboard."""
+        r = rpc([self._radio_token, "file", "exec",
+                 {"command": "/usr/sbin/batctl", "params": ["o"]}])
+        res = r.get("result")
+        if not (isinstance(res, list) and len(res) > 1 and res[0] == 0):
+            return []
+        mesh, seen = [], set()
+        for line in ((res[1] or {}).get("stdout", "") or "").splitlines():
+            m = self._BATCTL_RE.match(line)
+            if not m:
+                continue
+            orig, last_s, tq, nexthop = (m.group(1).lower(), m.group(2),
+                                         int(m.group(3)), m.group(4).lower())
+            if orig in seen:                   # keep only the selected route per originator
+                continue
+            seen.add(orig)
+            mesh.append({
+                "orig_address": orig,
+                "tq": tq,
+                "hop_status": "direct" if orig == nexthop else "relay",
+                "last_seen_msecs": int(float(last_s) * 1000),
+            })
+        return mesh
 
     @staticmethod
     def _to_float(v):
@@ -379,7 +529,14 @@ class Collector:
         ls = await loop.run_in_executor(None, self._radio_poll_blocking)
         if ls is None:
             self._radio_ok = False
+            # Print the reason once per distinct error so it's visible in the
+            # console / journalctl without spamming a line every poll_interval.
+            if self._radio_err and self._radio_err != self._radio_err_logged:
+                print(f"[{_iso(time.time())}] shore radio poll failed: {self._radio_err}",
+                      file=sys.stderr)
+                self._radio_err_logged = self._radio_err
             return
+        self._radio_err_logged = None          # reset so a future failure re-logs
         self._radio_stations, self._radio_summary = self._parse_linkstate(ls)
         self._radio_ts = time.time()
         self._radio_ok = True
@@ -427,6 +584,7 @@ class Collector:
             "polled_ts": self._radio_ts,
             "polled_iso": _iso(self._radio_ts),
             "age_s": age,
+            "last_error": self._radio_err,
             "station_count": len(stations),
             "mapped_count": sum(1 for v in per_boat.values() if v),
             "unmapped": unmapped,
@@ -490,6 +648,7 @@ class Collector:
         return {
             "ts": now,
             "iso": _iso(now),
+            "site": self.site,
             "shore_radio": shore,
             "shore_ok": shore_up,
             "telemetry_port": self.telemetry_port,
@@ -642,15 +801,24 @@ def load_config(path: str) -> dict:
 
 def main():
     ap = argparse.ArgumentParser(description="Shoreside connectivity collector (Subsystem A)")
-    here = os.path.dirname(os.path.abspath(__file__))
-    ap.add_argument("--config", default=os.path.join(here, "fleet.json"))
+    # --config is required: there is one config file per site (fleet.greece.json,
+    # fleet.mit.json) and no implicit default, so you always pick the fleet
+    # explicitly and can never probe the wrong one by forgetting the flag.
+    ap.add_argument("--config", required=True,
+                    help="path to the site fleet config (e.g. fleet.greece.json, fleet.mit.json)")
     ap.add_argument("--snapshot", default=None, help="override snapshot_path from config")
     ap.add_argument("--interval", type=float, default=None, help="override ping_interval_s")
     ap.add_argument("--once", action="store_true", help="single sweep then exit")
     ap.add_argument("--quiet", action="store_true", help="suppress per-cycle table")
     args = ap.parse_args()
 
-    cfg = load_config(args.config)
+    try:
+        cfg = load_config(args.config)
+    except FileNotFoundError:
+        print(f"config not found: {args.config}\n"
+              f"pass a site config, e.g. --config fleet.greece.json or --config fleet.mit.json",
+              file=sys.stderr)
+        sys.exit(1)
     if args.snapshot:
         cfg["snapshot_path"] = args.snapshot
     if args.interval is not None:

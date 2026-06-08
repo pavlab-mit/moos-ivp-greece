@@ -1,0 +1,21 @@
+MOOSTimeWarp = 1
+
+// NOTE: No front-seat app converts lat/lon to local X/Y, so this origin is
+// not actually consumed in the FS community today. Kept aligned to the
+// operating area for documentation and in case any app ever reads it.
+
+// Athens (datum from info_tifs/athens_*_20.info)
+LatOrigin  = 37.9325
+LongOrigin = 23.6263
+
+// MIT Sailing Pavilion
+//LatOrigin  = 42.358436
+//LongOrigin = -71.087448
+
+// Connecticut
+//LatOrigin = 41.300539
+//LongOrigin = -71.8680815
+
+// Juan de Fuca
+//LatOrigin  = 48
+//LongOrigin = -123.5

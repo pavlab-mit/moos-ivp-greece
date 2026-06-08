@@ -43,7 +43,7 @@ reachability alone can't give you.
   `tx_ip` set to this collector and `tx_port` matching `telemetry_port` below.
 - For Subsystem C: the shore radio reachable from the collector at its API IP
   (`10.1.0.3` by default — already the shore-radio ping rung), with JSON-RPC
-  enabled (default on June-2024+ firmware) and credentials set in `fleet.json`.
+  enabled (default on June-2024+ firmware) and credentials set in `fleet.<site>.json`.
   No boat-side setup and no extra RB5009 routes are needed — we poll the shore
   radio only, and it already hears every boat radio on the mesh.
 - This repository checked out on the collector Pi.
@@ -68,7 +68,7 @@ boat-side software is dead — which is exactly when its answer matters most.
 
 All probe addresses derive by formula from `BOAT_ID`
 (see [`01_fleet_and_network_reference.md` §4](../../documentation/01_fleet_and_network_reference.md#4-addressing-scheme)),
-so `fleet.json` lists only boat IDs and names and cannot drift from the address
+so `fleet.<site>.json` lists only boat IDs and names and cannot drift from the address
 plan. Each sweep walks a short ladder of rungs per boat:
 
 | Rung | Address | Tests |
@@ -87,7 +87,7 @@ plan. Each sweep walks a short ladder of rungs per boat:
 
 **Manual override (boats off the address plan).** A boat that doesn't follow the
 formula — a static lease, a different subnet, a frontseat/backseat reached over
-some other path — can pin any rung directly in `fleet.json` by giving it as an
+some other path — can pin any rung directly in `fleet.<site>.json` by giving it as an
 IP string instead of relying on `id`:
 
 ```json
@@ -148,8 +148,26 @@ go stale (`radio.ok:false`) and never disturbs A or B. Pure standard library
 cert means TLS verification is disabled (encrypted link, radio trusted by
 network position).
 
+**Linkstate file vs. fallback.** The Doodle Labs `linkstate` daemon writes the
+consolidated `/tmp/linkstate_current.json` (PHY + batman-adv mesh in one file)
+only when **Enable Link Status Log** is turned on in the radio's web GUI (Link
+Status Configuration). It's off by default on the pavlab units, so the daemon
+runs and emits ubus events but writes no file, and the collector's read returns
+"not found". Turning that toggle on is the cleanest fix — the collector then
+reads the file directly and gets every field (including `pl_ratio`).
+
+When the file is absent the collector reconstructs the same record itself, so
+monitoring works either way: per-neighbor RSSI, per-antenna RSSI, MCS, and tx
+retries/failed from `iwinfo assoclist`; channel/noise from `iwinfo info`;
+load/free memory from `system info`; and batman-adv mesh `tq` (0–255) plus
+direct/relay `hop` by parsing `batctl o`. The fallback is automatic and needs no
+config; set `radio.mesh_device` (default `wlan0`) only if the mesh interface is
+named differently. The only field the fallback can't supply is `pl_ratio`
+(packet-loss ratio), which reads as `—`; if `batctl` is missing on a unit, `tq`
+and `hop` read `—` too.
+
 Each station is joined back to a boat **by MAC**. The mapping lives in one place
-— `radio.macs` in `fleet.json` — to be filled in once at the site. Until a
+— `radio.macs` in `fleet.<site>.json` — to be filled in once at the site. Until a
 boat's MAC is filled, that boat shows no RF data and any station the shore radio
 hears for it surfaces in the snapshot's `radio.unmapped` list (and the
 dashboard's "unmapped" table), so nothing is hidden; filling the MAC snaps it to
@@ -169,7 +187,10 @@ between this process and the dashboard; nothing else is shared.
 
 ## 4. Configure
 
-Edit `fleet.json`. Set the active boats and tune the sweep:
+There is one config file per site — `fleet.greece.json` and `fleet.mit.json` —
+and `collect.py --config` is **required**, so you always pick the fleet
+explicitly and never probe the wrong one by forgetting a flag. Edit the file for
+your site; set the active boats and tune the sweep:
 
 ```json
 {
@@ -216,23 +237,31 @@ it: that boat simply shows no RF data, and any station the shore radio hears for
 it appears under `radio.unmapped` until the MAC is supplied. The MAC map is the
 single source of attribution; nothing else changes when you fill it in.
 
+> **Per-site files.** `fleet.greece.json` uses the formula addressing above
+> (shore uplink `10.1.0.<id>`, shore radio `10.1.0.3`). `fleet.mit.json` shares
+> the same internal `10.<id>.x` plan but the lab uses a different shore network,
+> so each boat pins an explicit `uplink` (`192.168.1.<100+id>`) and the shore
+> radio is `192.168.1.130` — an illustration of the §3.2 manual-override escape
+> hatch. Keep each site's boat roster and `radio.macs` in its own file.
+
 ## 5. Run
 
-Run on the collector Pi. A single sweep, printed, then exit:
+Run on the collector Pi. `--config` is required — name your site's file. A
+single sweep, printed, then exit:
 
 ```text
-./collect.py --once
+./collect.py --config fleet.greece.json --once
 ```
 
-Continuous loop using `./fleet.json`, printing a table each cycle:
+Continuous loop, printing a table each cycle (swap in `fleet.mit.json` at MIT):
 
 ```text
-./collect.py
+./collect.py --config fleet.greece.json
 ```
 
 Options:
 
-- `--config <path>` — use a config file other than `./fleet.json`.
+- `--config <path>` — **required**; the site fleet config (`fleet.greece.json`, `fleet.mit.json`).
 - `--snapshot <path>` — override `snapshot_path` (e.g. `/run/fleetmon/status.json`).
 - `--interval <seconds>` — override `ping_interval_s`.
 - `--once` — one sweep then exit.
@@ -240,8 +269,17 @@ Options:
 
 ## 6. Install as a Service
 
-Run as a `systemd` unit on the collector Pi so it survives reboots. Create
-`/etc/systemd/system/fleet-monitor.service`:
+Run as a `systemd` unit on the collector Pi so it survives reboots. The easiest
+path is the bundled installer, which writes both the collector and dashboard
+units and picks the site config for you (`FLEET` defaults to `greece`):
+
+```text
+sudo ./deploy/install.sh                 # Greece collector + dashboard
+sudo FLEET=mit ./deploy/install.sh       # MIT collector + dashboard
+```
+
+To do it by hand instead, create `/etc/systemd/system/fleet-monitor.service`
+(note `--config` is required — name the site file):
 
 ```ini
 [Unit]
@@ -249,8 +287,9 @@ Description=Shoreside fleet collector (connectivity + telemetry + RF)
 After=network-online.target
 
 [Service]
-WorkingDirectory=/home/pi/moos-ivp-greece/shoreside/fleet-monitor
-ExecStart=/home/pi/moos-ivp-greece/shoreside/fleet-monitor/collect.py \
+WorkingDirectory=/home/pi/moos-ivp-greece/scripts/fleet-monitor
+ExecStart=/home/pi/moos-ivp-greece/scripts/fleet-monitor/collect.py \
+          --config /home/pi/moos-ivp-greece/scripts/fleet-monitor/fleet.greece.json \
           --quiet --snapshot /run/fleetmon/status.json
 Restart=always
 RestartSec=2
@@ -271,8 +310,9 @@ sudo systemctl enable --now fleet-monitor.service
 
 ## 7. Verification
 
-- Run `./collect.py --once` with at least one reachable boat and confirm the
-  printed table shows that boat as `present` with a non-`--` uplink RTT.
+- Run `./collect.py --config fleet.greece.json --once` with at least one
+  reachable boat and confirm the printed table shows that boat as `present`
+  with a non-`--` uplink RTT.
 - Confirm the snapshot exists and parses: `python3 -m json.tool fleet_status.json`
   should print without error and list each active boat with a `state` field.
 - Unplug a backseat (or stop its host) and confirm that boat flips to
@@ -309,8 +349,11 @@ sudo systemctl enable --now fleet-monitor.service
 
 ## 9. Quick Reference
 
-- Addresses, for `BOAT_ID = N`: uplink `10.1.0.N`, frontseat `10.N.1.1`,
-  backseat `10.N.1.100`, shore radio `10.1.0.3`.
+- Config: one file per site (`fleet.greece.json`, `fleet.mit.json`);
+  `--config` is required.
+- Addresses (Greece), for `BOAT_ID = N`: uplink `10.1.0.N`, frontseat `10.N.1.1`,
+  backseat `10.N.1.100`, shore radio `10.1.0.3`. (MIT: uplink `192.168.1.(100+N)`,
+  shore radio `192.168.1.130`, same internal `10.N.x`.)
 - States: `present` (both up) · `frontseat_only` (uplink up, backseat down) ·
   `offline` (uplink down).
 - Telemetry (B): boats push `BB_STATUS` to `telemetry_port` (default 9300);
@@ -318,8 +361,8 @@ sudo systemctl enable --now fleet-monitor.service
 - RF/mesh (C): poll the shore radio's JSON-RPC linkstate at `radio.api_ip`;
   join stations to boats by `radio.macs`; per boat: `rssi`, `mcs`, mesh `tq`
   (0–255), `hop_status`. Fill `radio.macs` at the site; blanks → `radio.unmapped`.
-- Start a sweep: `./collect.py --once`. Run the service:
-  `sudo systemctl enable --now fleet-monitor.service`.
+- Start a sweep: `./collect.py --config fleet.greece.json --once`. Install the
+  service: `sudo ./deploy/install.sh` (or `sudo FLEET=mit ./deploy/install.sh`).
 - Snapshot: `fleet_status.json` (or the `--snapshot` path), rewritten atomically
   every `ping_interval_s`; each boat carries A `rungs` + B `telemetry` + C `radio`,
   plus a top-level `radio` summary.

@@ -1,0 +1,60 @@
+{
+  "_comment": "MIT pavlab lab-fleet registry for the shoreside connectivity collector. Same internal address plan as Greece (eth0 gw = 10.<id>.1.1, backseat = 10.<id>.1.100, both derived from BOAT_ID), BUT the lab shore uplink does NOT follow the Greece 10.1.0.<id> formula -- it is 192.168.1.(100+id) on the pavlab 192.168.1.0/24 backbone. Each boat therefore pins its shore presence with an explicit 'uplink' override; 'frontseat' and 'backseat' still derive from 'id'. Run with: ./collect.py --config fleet.mit.json. Source: Blue Boat lab network documentation (March 2026).",
+  "site": "MIT Pavlab",
+  "shore_radio_ip": "192.168.1.130",
+  "ping_interval_s": 2.0,
+  "ping_timeout_s": 1.0,
+  "history_window": 30,
+  "snapshot_path": "fleet_status.json",
+  "telemetry_port": 9300,
+  "telemetry_stale_s": 5.0,
+  "_comment_radio": "Subsystem C: RF/mesh from the shared lab DoodleLabs shoreside radio at 192.168.1.130 (the Linksys pavlab router is 192.168.1.1). 'macs' maps each boat name to its boat-radio MAC (lowercase, colon-separated); blanks mean 'not yet known' and surface under the dashboard 'unmapped' list. Credentials default to the June-2024+ firmware (user/DoodleSmartRadio).",
+  "radio": {
+    "enabled": true,
+    "api_ip": "192.168.1.130",
+    "username": "user",
+    "password": "DoodleSmartRadio",
+    "poll_interval_s": 2.0,
+    "timeout_s": 4.0,
+    "stale_s": 6.0,
+    "macs": {
+      "zoe": "00:30:1a:3c:21:c6",
+      "yip": "00:30:1a:3a:b3:29",
+      "xai": "00:30:1a:3c:20:a2",
+      "wes": "00:30:1a:3c:f9:69",
+      "via": ""
+    }
+  },
+  "boats": [
+    {
+      "id": 31,
+      "name": "zoe",
+      "active": true,
+      "uplink": "192.168.1.131"
+    },
+    {
+      "id": 32,
+      "name": "yip",
+      "active": true,
+      "uplink": "192.168.1.132"
+    },
+    {
+      "id": 33,
+      "name": "xai",
+      "active": true,
+      "uplink": "192.168.1.133"
+    },
+    {
+      "id": 34,
+      "name": "wes",
+      "active": true,
+      "uplink": "192.168.1.134"
+    },
+    {
+      "id": 35,
+      "name": "via",
+      "active": true,
+      "uplink": "192.168.1.135"
+    }
+  ]
+}

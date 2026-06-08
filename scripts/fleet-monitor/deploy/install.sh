@@ -8,6 +8,7 @@
 #   sudo ./deploy/install.sh                 # run as the invoking (sudo) user
 #   sudo RUN_USER=pi ./deploy/install.sh     # force a specific service user
 #   sudo PORT=8080 ./deploy/install.sh       # override dashboard port (default 80)
+#   sudo FLEET=mit ./deploy/install.sh       # which site config to run (default greece)
 #
 # On the default port 80 the dashboard answers a bare IP in the browser
 # (http://10.1.0.10/) -- no port, no /index.html. Ports below 1024 need
@@ -16,7 +17,7 @@
 # After install:
 #   systemctl status fleet-collector fleet-dashboard
 #   journalctl -u fleet-collector -f
-#   sudo systemctl restart fleet-collector   # <-- apply fleet.json edits
+#   sudo systemctl restart fleet-collector   # <-- apply fleet.<site>.json edits
 #
 set -euo pipefail
 
@@ -43,6 +44,20 @@ fi
 
 PORT="${PORT:-80}"
 
+# --- which site fleet config the collector runs (collect.py --config is required) ---
+FLEET="${FLEET:-greece}"
+FLEET_CONFIG="$DIR/fleet.$FLEET.json"
+if [[ ! -f "$FLEET_CONFIG" ]]; then
+  sites=()
+  for f in "$DIR"/fleet.*.json; do
+    [[ -e "$f" ]] || continue
+    s="${f##*/fleet.}"; sites+=("${s%.json}")
+  done
+  echo "error: fleet config not found: $FLEET_CONFIG" >&2
+  echo "       set FLEET=<site> to one of: ${sites[*]}" >&2
+  exit 1
+fi
+
 # Ports below 1024 are privileged; grant the (non-root) service the one
 # capability it needs to bind them. Above 1024 no capability is required.
 if [[ "$PORT" -lt 1024 ]]; then
@@ -56,6 +71,7 @@ fi
 echo "Installing fleet-monitor services:"
 echo "  directory : $DIR"
 echo "  run as    : $RUN_USER"
+echo "  fleet     : $FLEET ($FLEET_CONFIG)"
 echo "  python    : $PY"
 echo "  dashboard : $DASH_URL"
 echo
@@ -71,7 +87,7 @@ Wants=network-online.target
 Type=simple
 User=$RUN_USER
 WorkingDirectory=$DIR
-ExecStart=$PY $DIR/collect.py --quiet
+ExecStart=$PY $DIR/collect.py --config $FLEET_CONFIG --quiet
 Restart=always
 RestartSec=2
 
