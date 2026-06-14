@@ -95,6 +95,28 @@ Behavior = BHV_StationKeep
 }
 
 //----------------------------------------------
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_static
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  condition  = MODE!=ACTIVE:STATION-KEEPING
+  perpetual  = true
+
+  polygon    = pts={11,71.5:9.83,74.33:7,75.5:4.17,74.33:3,71.5:4.17,68.67:7,67.5:9.83,68.67}, label=static_obstacle
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+//----------------------------------------------
 Behavior = BHV_AvdColregsV22
 {
   name       = avdcol_

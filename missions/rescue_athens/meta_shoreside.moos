@@ -213,8 +213,8 @@ ProcessConfig = uFldCollisionDetect
   AppTick    = 4
   CommsTick  = 4
 
-  collision_range = 4
-  near_miss_range = 8
+  collision_range = 3
+  near_miss_range = 5
   encounter_range = 20
 
   encounter_flag = ENCOUNTER = $CPA                             

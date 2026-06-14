@@ -104,6 +104,7 @@ ProcessConfig = uTimerScript
 
 #ifdef VROLE rescue
   event      = var=RESCUE_REQUEST, val=vname=$(VNAME), time=1
+  event      = var=VIEW_POLYGON, val="pts={11,71.5:9.83,74.33:7,75.5:4.17,74.33:3,71.5:4.17,68.67:7,67.5:9.83,68.67},label=static_obstacle_visible,edge_color=yellow,vertex_color=yellow,fill_color=yellow,fill_transparency=0.35,vertex_size=2,edge_size=2", time=1
 #elseifdef VROLE scout
   event      = var=SCOUT_REQUEST, val="vname=$(VNAME),tmate=$(TMATE)", time=1
 #endif
@@ -199,7 +200,7 @@ ProcessConfig = pNodeReporter
 #else
   platform_type  = ship
 #endif
-	platform_length = 3
+	platform_length = 2
 	
 	platform_color = $(COLOR)
 
