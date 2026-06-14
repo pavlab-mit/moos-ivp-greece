@@ -16,7 +16,7 @@ ProcessConfig = ANTLER
   Run = iUnicore               @ NewConsole = false
   Run = iBBNavigatorInterface  @ NewConsole = false
   Run = iFrontSeatBroker       @ NewConsole = false
-  Run = pBB_Status             @ NewConsole = true
+  Run = pBB_Status             @ NewConsole = false
 
   #ifdef DEBUG true
   Run = uFldNodeBroker     @ NewConsole = false
