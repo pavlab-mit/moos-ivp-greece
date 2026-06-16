@@ -35,6 +35,7 @@ COLOR="coral"
 XMODE="BBOAT"
 START_POS="0,0"
 START_POS_SET=""
+RETURN_POS="0,0"
 SPEED="0.8"
 MAX_SPD="3"
 MISSION_NAME=""
@@ -133,6 +134,7 @@ if [ "${XMODE}" = "BBOAT" ]; then
     FSEAT_IP=`get_robot_info_greece.sh --fseat`
     COLOR=`get_robot_info_greece.sh --color`
     RADIO_IP=`get_robot_info_greece.sh --radio`
+    RETURN_POS=`get_robot_info_greece.sh --return`
     VEHICLE_TYPE="blueboat"
 fi
 
@@ -143,13 +145,17 @@ fi
 #------------------------------------------------------------
 if [ "${START_POS_SET}" != "yes" ]; then
     case "$VNAME" in
-	asha) START_POS="-176.6,12.6" ;;
-	bama) START_POS="-180.6,8.6"  ;;
-	chip) START_POS="-184.6,4.6"  ;;
-	dale) START_POS="-188.6,0.6"  ;;
-	ewan) START_POS="-192.6,-3.4" ;;
-	flex) START_POS="-196.6,-7.4" ;;
+	asha) START_POS="-16,-13"    ;;
+	bama) START_POS="-20,-17.2"  ;;
+	chip) START_POS="-24,-21.4"  ;;
+	dale) START_POS="-28,-25.6"  ;;
+	ewan) START_POS="-32,-29.8"  ;;
+	flex) START_POS="-36,-34"    ;;
     esac
+fi
+
+if [ "${RETURN_POS}" = "0,0" ]; then
+    RETURN_POS=$START_POS
 fi
 
 #------------------------------------------------------------
@@ -178,6 +184,7 @@ if [ "${VERBOSE}" = "yes" ]; then
     echo "TYPE  =         [${VEHICLE_TYPE}] "
     echo "------------Sim-------------------"
     echo "START_POS =     [${START_POS}]    "
+    echo "RETURN_POS =    [${RETURN_POS}]   "
     echo "STOCK_SPD =     [${STOCK_SPD}]    "
     echo "MAX_SPD =       [${MAX_SPD}]      "
     echo "------------Fld-------------------"
@@ -223,7 +230,7 @@ nsplug meta_vehicle.moos targs/targ_$VNAME.moos $NSFLAGS WARP=$TIME_WARP \
        REGION=$REGION               MODEM_ID=$MODEM_ID   \
 
 nsplug meta_vehicle.bhv targs/targ_$VNAME.bhv $NSFLAGS \
-       SPEED=$SPEED    START_POS=$START_POS
+       SPEED=$SPEED    START_POS=$START_POS RETURN_POS=$RETURN_POS
 if [ "${JUST_MAKE}" = "yes" ]; then
     echo "$ME: Targ files made; exiting without launch."
     exit 0
