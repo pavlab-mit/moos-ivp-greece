@@ -125,7 +125,7 @@ Behavior = BHV_StationKeep
 }
 
 //----------------------------------------------
-// Return Mode - back to the launch position
+// Return Mode - back to the vehicle return position
 //----------------------------------------------
 Behavior = BHV_Waypoint
 {
@@ -140,7 +140,7 @@ Behavior = BHV_Waypoint
   speed = 2.0
   capture_radius = 2.0
   slip_radius = 8.0
-  points = $(START_POS)
+  points = $(RETURN_POS)
 
   visual_hints = nextpt_color=red, nextpt_lcolor=red
   visual_hints = vertex_color=red, edge_color=red
@@ -152,13 +152,53 @@ Behavior = BHV_Waypoint
 //----------------------------------------------
 Behavior = BHV_AvoidObstacleV24
 {
-  name       = avdob_static
+  name       = avdob_buoy_1
   pwt        = 350
   condition  = AVOID = true
-  condition  = MODE == ACTIVE
+  condition  = MODE==ACTIVE
   perpetual  = true
 
-  polygon    = pts={-258.64,-11.88:-259.81,-9.05:-262.64,-7.88:-265.47,-9.05:-266.64,-11.88:-265.47,-14.71:-262.64,-15.88:-259.81,-14.71}, label=static_obstacle
+  polygon    = pts={-31,-6:-32.17,-3.17:-35,-2:-37.83,-3.17:-39,-6:-37.83,-8.83:-35,-10:-32.17,-8.83}, label=buoy_1
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_2
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-58.5,-17.9:-59.67,-15.07:-62.5,-13.9:-65.33,-15.07:-66.5,-17.9:-65.33,-20.73:-62.5,-21.9:-59.67,-20.73}, label=buoy_2
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_3
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-91,-28:-92.17,-25.17:-95,-24:-97.83,-25.17:-99,-28:-97.83,-30.83:-95,-32:-92.17,-30.83}, label=buoy_3
 
   allowable_ttc     = 20
   pwt_outer_dist    = 10
@@ -205,7 +245,7 @@ Behavior = BHV_OpRegionV24
   pwt     = 300
   updates = RECOVER_UPDATES
 
-  core_poly = pts={-65.9,-68.4:-2.6,6.6:-8.6,18.6:-70,17.6:-214.6,3.4}
+  core_poly = pts={-215,-2:-76,-86:-16,6:-79,4}
 
   dynamic_region_var = RESCUE_REGION
 

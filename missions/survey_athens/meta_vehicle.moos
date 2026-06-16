@@ -17,6 +17,7 @@ ProcessConfig = ANTLER
   Run = pHelmIvP           @ NewConsole = false
   Run = pHostInfo          @ NewConsole = false
   Run = uFldNodeBroker     @ NewConsole = false
+  Run = uTimerScript       @ NewConsole = false
   Run = pDeadManPost       @ NewConsole = false
   Run = pRealm             @ NewConsole = false
   Run = uFldMessageHandler @ NewConsole = false
@@ -51,6 +52,19 @@ ProcessConfig = ANTLER
 #include plugs/blueboat/plug_pRealm.moos
 #include plugs/blueboat/plug_pHelmIvP.moos
 #include plugs/blueboat/plug_uFldNodeBroker.moos
+
+//------------------------------------------------------------
+// uTimerScript config block
+
+ProcessConfig = uTimerScript
+{
+  reset_max  = unlimited
+  reset_time = end
+
+  event = var=VIEW_POLYGON, val="pts={-31,-6:-32.17,-3.17:-35,-2:-37.83,-3.17:-39,-6:-37.83,-8.83:-35,-10:-32.17,-8.83},label=buoy_1_visible,edge_color=yellow,vertex_color=yellow,fill_color=yellow,fill_transparency=0.35,vertex_size=2,edge_size=2", time=1
+  event = var=VIEW_POLYGON, val="pts={-58.5,-17.9:-59.67,-15.07:-62.5,-13.9:-65.33,-15.07:-66.5,-17.9:-65.33,-20.73:-62.5,-21.9:-59.67,-20.73},label=buoy_2_visible,edge_color=yellow,vertex_color=yellow,fill_color=yellow,fill_transparency=0.35,vertex_size=2,edge_size=2", time=2
+  event = var=VIEW_POLYGON, val="pts={-91,-28:-92.17,-25.17:-95,-24:-97.83,-25.17:-99,-28:-97.83,-30.83:-95,-32:-92.17,-30.83},label=buoy_3_visible,edge_color=yellow,vertex_color=yellow,fill_color=yellow,fill_transparency=0.35,vertex_size=2,edge_size=2", time=3
+}
 
 #ifdef XMODE SIM
   #include plugs/blueboat/plug_uSimMarineV22.moos

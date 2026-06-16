@@ -16,6 +16,8 @@ ProcessConfig = pMarineViewer
   vehicles_name_mode   = names
 
   circle_viewable_all = true
+  polygon_viewable_all = true
+  polygon_viewable_labels = false
 
   beat_flag = HEARTBEAT=true
 
