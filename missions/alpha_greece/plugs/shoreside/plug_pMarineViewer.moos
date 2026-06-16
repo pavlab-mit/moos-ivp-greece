@@ -1,0 +1,72 @@
+//--------------------------------------------------------
+ProcessConfig = pMarineViewer
+{
+  AppTick    = 4
+  CommsTick  = 4
+
+  // Hellenic Naval Academy basin (Esri World Imagery, 2026-06-16 datum).
+  tiff_file            = moos_georef_20260616_081356.tif
+
+  // Pan/zoom are an estimate translated from the prior chart; fine-tune
+  // in the viewer to frame the operating area (~ -250,-10).
+  set_pan_x            = -305
+  set_pan_y            = -138
+  zoom                 = 1.22
+  vehicles_shape_scale = 1.5
+  vehicles_name_mode   = names
+
+  circle_viewable_all = true
+  polygon_viewable_all = true
+  polygon_viewable_labels = false
+
+  beat_flag = HEARTBEAT=true
+
+  appcast_viewable = true
+  appcast_color_scheme = indigo
+
+  scope  = DEPLOY_ALL
+  scope  = AUTONOMY_MODE
+  scope  = TIMESTAMP_FLAG
+
+  action = STATION_KEEP_ALL = false
+  action = STATION_KEEP_ALL = true
+  action = BLOCK_HEARTBEAT = true
+  action = BLOCK_HEARTBEAT = false
+
+  //--- Main mode buttons -------------------------------------
+  // DEPLOY holds station at the launch position by default.
+  button_one   = DEPLOY  # DEPLOY_ALL=true # MOOS_MANUAL_OVERRIDE_ALL=false
+  button_one   = RETURN_ALL=false # STATION_KEEP_ALL=true
+
+  button_two   = LAWNMOWER    # AUTONOMY_MODE_ALL=LAWNMOWER # DEPLOY_ALL=true
+  button_two   = MOOS_MANUAL_OVERRIDE_ALL=false # RETURN_ALL=false # STATION_KEEP_ALL=false
+
+  button_three = LOITER  # AUTONOMY_MODE_ALL=LOITER # DEPLOY_ALL=true
+  button_three = MOOS_MANUAL_OVERRIDE_ALL=false # RETURN_ALL=false # STATION_KEEP_ALL=false
+
+  button_four = GOTO  # AUTONOMY_MODE_ALL=GOTO # DEPLOY_ALL=true
+  button_four = MOOS_MANUAL_OVERRIDE_ALL=false # RETURN_ALL=false # STATION_KEEP_ALL=false
+
+  button_five  = STATION # STATION_KEEP_ALL=true # RETURN_ALL=false
+
+  button_six  = RETURN  # RETURN_ALL=true # STATION_KEEP_ALL=false
+
+  button_7   = ALLSTOP # DEPLOY_ALL=false
+
+  //--- Log marker: inert, bridged to vehicles, just stamps the logs
+  button_8  = TIMESTAMP # TIMESTAMP_FLAG_ALL=mark
+
+  //--- Loiter radius controls --------------------------------
+  button_9 = RAD++ # LOITER_UPDATE_ALL=mod_poly_rad=5
+  button_10  = RAD-- # LOITER_UPDATE_ALL=mod_poly_rad=-5
+
+  //--- Speed selection (updates goto + loiter) ---------------
+  button_11  = SPD_0.8 # WAYPOINT_UPDATE_ALL=speed=0.8 # LOITER_UPDATE_ALL=speed=0.8
+  button_12 = SPD_1.5 # WAYPOINT_UPDATE_ALL=speed=1.5 # LOITER_UPDATE_ALL=speed=1.5
+
+  //--- Left-click sets the active behavior's point -----------
+  left_context[update_all] = WAYPOINT_UPDATE_ALL = points=$[XPOS],$[YPOS]
+  left_context[update_all] = STATION_UPDATE_ALL = station_pt=$[XPOS],$[YPOS]
+  left_context[update_all] = STATION_UPDATE_ALL = center_activate=true
+  left_context[update_all] = LOITER_UPDATE_ALL = center_assign=$[XPOS],$[YPOS]
+}

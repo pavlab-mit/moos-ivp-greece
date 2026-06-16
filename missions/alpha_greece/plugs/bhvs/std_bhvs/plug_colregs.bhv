@@ -1,0 +1,41 @@
+//---------------------------------------------- 
+Behavior = BHV_AvdColregsV22
+{
+  name         = avdcol_
+  pwt          = 200
+  //pwt          = 400
+  condition    = AVOID == true
+  condition    = MODE==ACTIVE
+  condition    = MODE!=ACTIVE:STATION-KEEPING
+  updates      = CONTACT_INFO
+  //endflag      = CONTACT_RESOLVED = $[CONTACT]
+  templating   = spawn
+
+  activeflag   = AVOIDING = active
+  inactiveflag = AVOIDING = inactive
+  runflag      = AVOIDING = running
+  endflag      = AVOIDING = end
+
+            contact = to-be-set
+   on_no_contact_ok = true
+        extrapolate = true
+              decay = 30,60
+
+        headon_only = true
+    velocity_filter = min_spd=0.2, max_spd=1.0, pct=40
+       use_refinery = true
+
+#ifdef XMODE SIM
+	bearing_line_show = true
+#else
+	bearing_line_show = false
+#endif
+	
+     pwt_outer_dist = 20
+     pwt_inner_dist = 10
+     completed_dist = 25
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+          pwt_grade = linear
+//   bearing_line_config = white:0, green:0.65, yellow:0.8, red:1.0
+}

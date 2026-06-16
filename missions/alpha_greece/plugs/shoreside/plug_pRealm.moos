@@ -1,0 +1,17 @@
+//---------------------------------------------------------
+// pRealm Config Block
+
+ProcessConfig = pRealm
+{
+  AppTick    = 2
+  CommsTick  = 2
+
+	hist_var = NODE_MESSAGE
+	hist_var = NODE_MESSAGE_LOCAL
+	hist_var = MUSTER_START
+	hist_var = MUSTER_START_TEST
+	scope_set = name=task_mgr, vars=TASK_MGR_STATUS:MISSION_TASK:MISSION_TASK_ALL
+
+	msg_max_hist = 50
+
+}
