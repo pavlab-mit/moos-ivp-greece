@@ -27,11 +27,7 @@ ProcessConfig = ANTLER
     Run = uSimMarineV22      @ NewConsole = false
     Run = pMarinePIDV22      @ NewConsole = false
   #elseifdef XMODE BBOAT
-    //Run = iDoodleLabs        @ NewConsole = false
-    //Run = uRTCMBroker          @ NewConsole = false
-
     Run = iBackSeatBroker    @ NewConsole = false
-    // Run = uBBBundler         @ NewConsole = false
     Run = pBB_DGPS_EKF       @ NewConsole = false
     Run = pMarinePIDV22        @ NewConsole = false
     Run = pThrustMix           @ NewConsole = false
@@ -59,7 +55,6 @@ ProcessConfig = ANTLER
 #ifdef XMODE SIM
   #include plugs/blueboat/plug_uSimMarineV22.moos
   #include plugs/blueboat/plug_pMarinePIDV22.moos
-  #include plugs/blueboat/plug_uSideScanSim.moos
 #elseifdef XMODE BBOAT
   #include plugs/blueboat/plug_iBackSeatBroker.moos
   #include plugs/blueboat/plug_pBB_DGPS_EKF.moos

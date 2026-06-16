@@ -138,16 +138,17 @@ fi
 
 #------------------------------------------------------------
 #  Part 4b: Per-vehicle start position for the a-f fleet, evenly
-#           spaced (93,96)->(73,76). Overridden by --start_pos.
+#           spaced along the launch line (new-origin frame).
+#           Overridden by --start_pos.
 #------------------------------------------------------------
 if [ "${START_POS_SET}" != "yes" ]; then
     case "$VNAME" in
-	asha) START_POS="93,96" ;;
-	bama) START_POS="89,92" ;;
-	chip) START_POS="85,88" ;;
-	dale) START_POS="81,84" ;;
-	ewan) START_POS="77,80" ;;
-	flex) START_POS="73,76" ;;
+	asha) START_POS="-176.6,12.6" ;;
+	bama) START_POS="-180.6,8.6"  ;;
+	chip) START_POS="-184.6,4.6"  ;;
+	dale) START_POS="-188.6,0.6"  ;;
+	ewan) START_POS="-192.6,-3.4" ;;
+	flex) START_POS="-196.6,-7.4" ;;
     esac
 fi
 

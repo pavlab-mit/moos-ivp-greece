@@ -56,7 +56,7 @@ Behavior = BHV_Waypoint
   speed     = $(SPEED)
   radius    = 3.0
   slip_radius = 8.0
-  points    = 16,71            // default (op-region centroid); updated by left-click
+  points    = -253.6,-12.4     // default (op-region centroid); updated by left-click
 
   repeat    = 0
   lead      = 8
@@ -88,7 +88,7 @@ Behavior = BHV_Loiter
   speed = $(SPEED)
   spiral_factor = 99
 
-  polygon = radial::x=16,y=71,radius=25,pts=16
+  polygon = radial::x=-253.6,y=-12.4,radius=25,pts=16
 
   visual_hints = vertex_size  = 1
   visual_hints = edge_size    = 1
@@ -158,7 +158,7 @@ Behavior = BHV_AvoidObstacleV24
   condition  = MODE == ACTIVE
   perpetual  = true
 
-  polygon    = pts={11,71.5:9.83,74.33:7,75.5:4.17,74.33:3,71.5:4.17,68.67:7,67.5:9.83,68.67}, label=static_obstacle
+  polygon    = pts={-258.64,-11.88:-259.81,-9.05:-262.64,-7.88:-265.47,-9.05:-266.64,-11.88:-265.47,-14.71:-262.64,-15.88:-259.81,-14.71}, label=static_obstacle
 
   allowable_ttc     = 20
   pwt_outer_dist    = 10
@@ -201,11 +201,10 @@ Behavior = BHV_AvdColregsV22
 
 //----------------------------------------------
 // Operating region (keeps the vehicle in the basin).
-//   Convex hull of the surveyed points (interior point (-3,29) was
-//   dropped to satisfy BHV_OpRegionV24's convexity requirement when
-//   save/halt_dist are set). The S/W/N corners are then pulled 3 m
-//   inward toward center; the NE edge (90,90/84,102) is left at the
-//   launch line.
+//   Convex 5-point region: S/W/N corners pulled 3 m inward, NE edge
+//   at the launch line. Coordinates are in the new-origin frame
+//   (moos_georef_20260616_081356 datum); must stay convex because
+//   BHV_OpRegionV24 requires it when save/halt_dist are set.
 //----------------------------------------------
 Behavior = BHV_OpRegionV24
 {
@@ -213,7 +212,7 @@ Behavior = BHV_OpRegionV24
   pwt     = 300
   updates = RECOVER_UPDATES
 
-  core_poly = pts={26.7,15:90,90:84,102:22.6,101:-122,86.8}
+  core_poly = pts={-242.9,-68.4:-179.6,6.6:-185.6,18.6:-247,17.6:-391.6,3.4}
 
   dynamic_region_var = RESCUE_REGION
 
