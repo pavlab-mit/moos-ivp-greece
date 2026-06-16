@@ -199,20 +199,13 @@ Behavior = BHV_AvdColregsV22
   pwt_grade          = linear
 }
 
-//----------------------------------------------
-// Operating region (keeps the vehicle in the basin).
-//   Convex 5-point region: S/W/N corners pulled 3 m inward, NE edge
-//   at the launch line. Coordinates are in the new-origin frame
-//   (moos_georef_20260616_081356 datum); must stay convex because
-//   BHV_OpRegionV24 requires it when save/halt_dist are set.
-//----------------------------------------------
 Behavior = BHV_OpRegionV24
 {
   name    = opreg
   pwt     = 300
   updates = RECOVER_UPDATES
 
-  core_poly = pts={-242.9,-68.4:-179.6,6.6:-185.6,18.6:-247,17.6:-391.6,3.4}
+  core_poly = pts={-65.9,-68.4:-2.6,6.6:-8.6,18.6:-70,17.6:-214.6,3.4}
 
   dynamic_region_var = RESCUE_REGION
 
