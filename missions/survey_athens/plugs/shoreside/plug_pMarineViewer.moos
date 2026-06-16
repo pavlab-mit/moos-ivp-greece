@@ -4,12 +4,13 @@ ProcessConfig = pMarineViewer
   AppTick    = 4
   CommsTick  = 4
 
-  // Hellenic Naval Academy basin. Toggle charts with backtick (`) key.
-  tiff_file            = plugs/shoreside/athens_hgoo_20.tif
-  tiff_file_b          = plugs/shoreside/athens_thgoo_20.tif
+  // Hellenic Naval Academy basin (Esri World Imagery, 2026-06-16 datum).
+  tiff_file            = moos_georef_20260616_081356.tif
 
-  set_pan_x            = -634
-  set_pan_y            = -240
+  // Pan/zoom are an estimate translated from the prior chart; fine-tune
+  // in the viewer to frame the operating area (~ -250,-10).
+  set_pan_x            = -305
+  set_pan_y            = -138
   zoom                 = 1.22
   vehicles_shape_scale = 1.5
   vehicles_name_mode   = names
