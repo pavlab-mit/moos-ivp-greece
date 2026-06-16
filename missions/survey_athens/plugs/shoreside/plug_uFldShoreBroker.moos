@@ -1,0 +1,34 @@
+//--------------------------------------------------
+// uFldShoreBroker Configuration Block
+
+ProcessConfig = uFldShoreBroker
+{
+  AppTick       = 2
+  CommsTick     = 2
+
+  // Note: [QBRIDGE = FOO]  is shorthand for                    
+  //       [BRIDGE = src=FOO_$V,  alias=FOO] and                
+  //       [BRIDGE = src=FOO_ALL, alias=FOO]
+
+  qbridge  = DEPLOY, RETURN, STATION_KEEP, NODE_REPORT, NODE_MESSAGE
+  qbridge  = MOOS_MANUAL_OVERRIDE, APPCAST_REQ, AVOID, UP_LOITER
+  qbridge  = CONVOY_UPDATES, LEADER
+  qbridge  = RETURN_UPDATES, BCM_DISPLAY_RADII, USMT_ENABLED, REALMCAST_REQ
+  qbridge  = USMT_MOD_TOWLEN, USMT_SET_TOWLEN, TOM_WELCOME, TOM_PURSUE
+  qbridge  = MISSION_TASK, UP_CONVOY, MUSTER, GATHER, ATURN_ENGAGE, LOITER
+  qbridge  = ENCIRCLE_ACTIVE, UP_MUSTER, SAY_VOLUME, ATURN, CONVOY
+  qbridge  = MEDIATED_MESSAGE, ACK_MESSAGE, TERM_REPORT_INTERVAL
+  qbridge  = COMMS_POLICY
+  qbridge  = QUIT_MISSION
+
+  bridge   = src=UP_LOITER_$N, alias=UP_LOITER
+  bridge   = src=DRIFT_VECTOR_ADD, alias=DRIFT_VECTOR_ADD
+  bridge   = src=HELM_MAP_CLEAR, alias=HELM_MAP_CLEAR
+
+  qbridge  = AUTONOMY_MODE
+  qbridge  = WAYPOINT_UPDATE, WAYPOINTS_CLEAR, STATION_UPDATE
+  qbridge  = LOITER_UPDATE
+  qbridge  = TIMESTAMP_FLAG
+
+	app_logging = off
+}

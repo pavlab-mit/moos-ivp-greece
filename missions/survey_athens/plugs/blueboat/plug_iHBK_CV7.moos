@@ -1,0 +1,30 @@
+//--------------------------------------------------------
+// iHBK_CV7 config - AHRS for vehicle state (NAV_ROLL, NAV_PITCH, NAV_HEADING)
+
+ProcessConfig = iHBK_CV7
+{
+  apptick   = 10
+  commstick = 10
+
+  port = /dev/cv7_ahrs
+  baudrate = 115200
+
+  mount_roll  = 0.0
+  mount_pitch = 0.0
+  mount_yaw   = -90.0
+
+  roll_var   = NAV_ROLL
+  pitch_var  = NAV_PITCH
+  yaw_var    = NAV_YAW_CV7
+  heading_var = NAV_HEADING_CV7
+
+  declination = -14.0833
+  declination_var = WMMHR_DECL
+  gravity = -9.81
+  cv7_mode = gyro_and_mag
+
+  debug = false
+  verbose = false
+  logging = true
+  log_path = ./logs/$(MISSION_NAME)
+}

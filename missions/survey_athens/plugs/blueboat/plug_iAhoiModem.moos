@@ -1,0 +1,34 @@
+//---------------------------------------------------
+// Plug file: plug_iAhoiModem.moos
+// Brief:      AHOI acoustic modem interface
+//---------------------------------------------------
+
+ProcessConfig = iAhoiModem
+{
+  AppTick   = 8
+  CommsTick = 8
+
+  // Hardware Configuration - Blueboat uses ttyAMA0
+  device    = /dev/ttyAMA0
+  baudrate  = 115200
+  local_id  = $(MODEM_ID)
+
+  // MOOS Acomms Configuration (all times in seconds)
+  mtu_bytes         = 64
+  queue_cap         = 4
+  send_timeout_s    = 8.0
+  retry_delay_s     = 1.0
+  post_period_s     = 5.0
+  reply_window_s    = 5.0
+  default_sos_mps   = 1500.0
+
+  // AHOI Modem Configuration
+  rx_thresh         = 10
+  bit_spread        = 3
+  tx_gain           = 11
+  rx_gain           = 19
+  freq_bands_num    = 13
+  freq_carrier_num  = 26
+  agc_enabled       = true
+  sniff_mode        = false
+}

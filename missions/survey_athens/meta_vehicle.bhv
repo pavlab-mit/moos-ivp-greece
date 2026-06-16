@@ -1,0 +1,229 @@
+//*******************************************************
+// Vehicle behavior configuration file
+//   Mission: survey_athens (Hellenic Naval Academy basin)
+//   Modes:   GOTO / LOITER / STATION / RETURN
+//   Safety:  static-obstacle avoidance, COLREGS, op-region
+//*******************************************************
+
+initialize   DEPLOY = false
+initialize   RETURN = false
+initialize   STATION_KEEP = true       // DEPLOY -> hold station at launch
+initialize   AUTONOMY_MODE = GOTO
+initialize   AVOID = true
+
+set MODE = ACTIVE {
+  DEPLOY = true
+} INACTIVE
+
+set MODE = STATION_MODE {
+  MODE = ACTIVE
+  STATION_KEEP = true
+  RETURN = false
+}
+
+set MODE = GOTO_MODE {
+  MODE = ACTIVE
+  AUTONOMY_MODE = GOTO
+  RETURN = false
+  STATION_KEEP = false
+}
+
+set MODE = LOITER_MODE {
+  MODE = ACTIVE
+  AUTONOMY_MODE = LOITER
+  RETURN = false
+  STATION_KEEP = false
+}
+
+set MODE = RETURN_MODE {
+  MODE = ACTIVE
+  RETURN = true
+  STATION_KEEP = false
+}
+
+//----------------------------------------------
+// Goto Mode - left-click on the viewer sets the point
+//----------------------------------------------
+Behavior = BHV_Waypoint
+{
+  name      = bhv_waypoint
+  pwt       = 100
+  condition = MODE == GOTO_MODE
+  updates   = WAYPOINT_UPDATE
+  runflag   = GOTO_MODE = true
+  perpetual = true
+
+  speed     = $(SPEED)
+  radius    = 3.0
+  slip_radius = 8.0
+  points    = 16,71            // default (op-region centroid); updated by left-click
+
+  repeat    = 0
+  lead      = 8
+  lead_damper = 1
+  order     = normal
+  cycleflag = WAYPOINTS_COMPLETE = true
+
+  visual_hints = nextpt_color=red, nextpt_lcolor=khaki
+  visual_hints = vertex_color=yellow, edge_color=gray25
+  visual_hints = vertex_size=3, edge_size=1
+}
+
+//----------------------------------------------
+// Loiter Mode - radial loiter; RAD++/RAD-- adjust radius
+//----------------------------------------------
+Behavior = BHV_Loiter
+{
+  name      = bhv_loiter
+  pwt       = 100
+  condition = MODE == LOITER_MODE
+  updates   = LOITER_UPDATE
+  perpetual = true
+
+  acquire_dist = 3
+  capture_radius = 5
+  center_activate = false
+  clockwise = false
+  slip_radius = 15
+  speed = $(SPEED)
+  spiral_factor = 99
+
+  polygon = radial::x=16,y=71,radius=25,pts=16
+
+  visual_hints = vertex_size  = 1
+  visual_hints = edge_size    = 1
+  visual_hints = vertex_color = dodger_blue
+  visual_hints = edge_color   = white
+  visual_hints = nextpt_color = yellow
+  visual_hints = nextpt_lcolor = aqua
+  visual_hints = nextpt_vertex_size = 5
+}
+
+//----------------------------------------------
+// Station Keep Mode - holds where activated (launch pos on deploy)
+//----------------------------------------------
+Behavior = BHV_StationKeep
+{
+  name      = bhv_station
+  pwt       = 100
+  condition = MODE == STATION_MODE
+  updates   = STATION_UPDATE
+  runflag   = STATION_MODE = true
+  perpetual = true
+
+  center_activate = true
+  inner_radius = 5
+  outer_radius = 10
+  outer_speed  = 1.0
+  transit_speed = 2.0
+
+  station_pt = $(START_POS)
+  swing_time = 10
+
+  visual_hints = vertex_color=white, edge_color=gray25
+  visual_hints = vertex_size=4, edge_size=1
+}
+
+//----------------------------------------------
+// Return Mode - back to the launch position
+//----------------------------------------------
+Behavior = BHV_Waypoint
+{
+  name       = bhv_return
+  pwt        = 100
+  condition  = MODE == RETURN_MODE
+  perpetual  = true
+  updates    = RETURN_UPDATE
+  endflag    = RETURN = false
+  endflag    = STATION_KEEP = true
+
+  speed = 2.0
+  capture_radius = 2.0
+  slip_radius = 8.0
+  points = $(START_POS)
+
+  visual_hints = nextpt_color=red, nextpt_lcolor=red
+  visual_hints = vertex_color=red, edge_color=red
+  visual_hints = vertex_size=5, edge_size=2
+}
+
+//----------------------------------------------
+// Static obstacle avoidance (Hellenic Naval Academy basin)
+//----------------------------------------------
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_static
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE == ACTIVE
+  perpetual  = true
+
+  polygon    = pts={11,71.5:9.83,74.33:7,75.5:4.17,74.33:3,71.5:4.17,68.67:7,67.5:9.83,68.67}, label=static_obstacle
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+//----------------------------------------------
+// Dynamic contact avoidance (COLREGS) - spawns per contact
+//----------------------------------------------
+Behavior = BHV_AvdColregsV22
+{
+  name       = avdcol_
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE == ACTIVE
+  updates    = CONTACT_INFO
+  endflag    = CONTACT_RESOLVED = $[CONTACT]
+  templating = spawn
+
+  contact            = to-be-set
+  on_no_contact_ok   = true
+  extrapolate        = true
+  decay              = 30,60
+
+  headon_only        = true
+  use_refinery       = true
+
+  pwt_outer_dist     = 15
+  pwt_inner_dist     = 7
+  completed_dist     = 30
+  min_util_cpa_dist  = 4
+  max_util_cpa_dist  = 8
+  pwt_grade          = linear
+}
+
+//----------------------------------------------
+// Operating region (keeps the vehicle in the basin).
+//   Convex hull of the surveyed points (interior point (-3,29) was
+//   dropped to satisfy BHV_OpRegionV24's convexity requirement when
+//   save/halt_dist are set). The S/W/N corners are then pulled 3 m
+//   inward toward center; the NE edge (90,90/84,102) is left at the
+//   launch line.
+//----------------------------------------------
+Behavior = BHV_OpRegionV24
+{
+  name    = opreg
+  pwt     = 300
+  updates = RECOVER_UPDATES
+
+  core_poly = pts={26.7,15:90,90:84,102:22.6,101:-122,86.8}
+
+  dynamic_region_var = RESCUE_REGION
+
+  visual_hints = edge_size = 1
+
+  visual_hints = save_edge_color = gray30
+  visual_hints = halt_edge_color = gray40
+
+  save_dist = 1
+  halt_dist = 4.5
+
+  recover_spd = 0.6
+}

@@ -1,0 +1,31 @@
+//--------------------------------------------------------
+// iTracker650 config Block 
+
+
+ProcessConfig = iTracker650
+{
+  // Shared memory stem for StdMsgDVL
+  dvl_stem = /std_dvl_t650
+
+  // Network configuration
+  receiving_ip        = 192.168.10.100    // Default IP for receiving data
+  receiving_port      = 27000          // Default port for receiving data
+
+  sending_ip          = 192.168.10.100    // Default IP for sending commands
+  sending_port        = 50000          // Default port for sending commands
+
+  // Operational settings
+  pool_mode           = false          // Enable/disable pool mode
+  logging             = true          // Enable/disable logging
+  verbose             = false          // Enable/disable verbose output
+  debug               = false          // Enable/disable debug mode
+
+  // Logging configuration
+  log_directory       = ./logs/$(MISSION_NAME)         // Directory for log files
+
+  // Sensor configuration
+  //speed_of_sound      = 1500.0         // Speed of sound in m/s
+  //sensor_orientation  = 0.0,0.0,0.0    // Roll, pitch, heading orientation of the sensor
+
+  // Additional configuration parameters can be added here
+}

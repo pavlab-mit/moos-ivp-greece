@@ -1,0 +1,22 @@
+//------------------------------------------
+// pRealm config block
+
+ProcessConfig = pRealm
+{
+  AppTick   = 4
+  CommsTick = 4
+
+	msg_max_hist = 20
+	trunc_length = 270
+	wrap_length  = 90
+
+	summary_interval = 2.0
+	relcast_interval  = 0.8
+	
+	//hist_var = MISSION_TASK
+	//hist_var = TASK_BID_RCVD
+	//hist_var = NODE_MESSAGE
+	//hist_var = NODE_MESSAGE_LOCAL
+	//hist_var = TASK_STATE
+	//hist_var = TASK_MGR_STATUS	
+}

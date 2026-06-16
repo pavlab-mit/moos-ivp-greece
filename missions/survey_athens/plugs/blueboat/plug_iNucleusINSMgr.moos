@@ -1,0 +1,14 @@
+//------------------------------------------------
+// iNucleusINSMgr config block
+
+ProcessConfig = iNucleusINSMgr
+{
+   AppTick   = 4
+   CommsTick = 4
+
+   mode           = ASV
+   nav_source     = nav_state
+   nav_source_var = NAV_STATE
+   update_pos_var = NUCLEUS_UPDATE_POS
+   dvl_suffix     = _NUC
+}

@@ -1,0 +1,14 @@
+//------------------------------------------
+// uSideScanSim config block
+
+ProcessConfig = uSideScanSim
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  mount_angle_deg  = 22      // Mount angle off horizontal (degrees)
+  beam_width_deg   = 50      // Total beam fan width (degrees)
+  max_slant_range  = 60      // Max slant range (meters)
+  default_standoff = 5       // Default standoff if no DVL data (meters)
+  standoff_var     = DVL_STANDOFF
+}

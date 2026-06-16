@@ -1,0 +1,14 @@
+//------------------------------------------
+// uASVNavEval config block
+
+ProcessConfig = uASVNavEval
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  depth_mean  = 1.0
+  depth_sigma = 0.015
+
+  // Nav solutions to track and publish as shadow node reports
+  nav_suffix = _T650
+}

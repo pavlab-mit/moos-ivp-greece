@@ -1,0 +1,69 @@
+//----------------------------------------------
+Behavior=BHV_Waypoint
+{
+  name       = waypt_return
+  pwt        = 100
+  condition  = RETURN = true
+  condition  = DEPLOY = true
+  perpetual  = true
+  updates    = RETURN_UPDATE
+  endflag    = RETURN = false
+  endflag    = STATION = true
+
+      lead_condition = AVOIDING != active
+
+//                lead = 8
+//         lead_damper = 1
+//       lead_to_start = true
+
+           speed = $(TRANSIT_SPD)
+  capture_radius = 5.0
+     slip_radius = 12.0
+
+
+// Return home points - line at 65.6° from north, 4m spacing
+// Starting from abe at (20, -15)
+#ifdef VNAME abe
+	point = 20,-15
+#elseifdef VNAME ben
+	point = 16,-17
+#elseifdef VNAME cal
+	point = 13,-18
+#elseifdef VNAME deb
+	point = 9,-20
+#elseifdef VNAME eve
+	point = 5,-22
+#elseifdef VNAME fin
+	point = 2,-23
+#elseifdef VNAME max
+	point = -2,-25
+#elseifdef VNAME ned
+	point = -5,-27
+#elseifdef VNAME oak
+	point = -9,-28
+#elseifdef VNAME pip
+	point = -13,-30
+#elseifdef VNAME zoe
+	point = 24,-13
+#elseifdef VNAME yip
+	point = 27,-12
+#elseifdef VNAME xai
+	point = 31,-10
+#elseifdef VNAME wes
+	point = 35,-8
+#elseifdef VNAME val
+	point = 38,-7
+#elseifdef VNAME uma
+	point = 42,-5
+#elseifdef VNAME ted
+	point = 45,-3
+#elseifdef VNAME sam
+	point = 49,-2
+#elseifdef VNAME ray
+	point = 53,0
+#elseifdef VNAME pat
+	point = 56,2
+#else
+	point = 20,-15
+#endif
+ }

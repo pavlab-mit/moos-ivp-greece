@@ -1,0 +1,42 @@
+//----------------------------------------------------
+// pSideScanImager Configuration
+// Side scan waterfall image generation from shared memory
+// Outputs PNG images with processing pipeline:
+//   EGN -> Contrast Stretch -> Gaussian Smoothing -> Copper Colormap
+//----------------------------------------------------
+
+ProcessConfig = pSideScanImager
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  // Time-based capture (seconds between snapshots)
+  capture_interval = 10.0
+
+  // Output paths (matches pLogger structure)
+  log_directory = ./logs/%(MISSION_NAME)
+  vehicle_name = %(VNAME)
+
+  // Channel selection (both enabled by default)
+  capture_port = true
+  capture_starboard = true
+
+  //--------------------------------------------------
+  // Image Processing Pipeline (PINGMapper-inspired)
+  //--------------------------------------------------
+
+  // Empirical Gain Normalization - corrects range-dependent intensity
+  apply_egn = true
+
+  // Percentile contrast stretching - enhances dynamic range
+  apply_contrast = true
+  contrast_low = 2.0        // Lower percentile (clips dark pixels)
+  contrast_high = 98.0      // Upper percentile (clips bright pixels)
+
+  // Gaussian smoothing - reduces speckle noise
+  apply_smoothing = true
+  smoothing_kernel = 3      // Kernel size (3, 5, or 7)
+
+  // Position/depth stamp overlay on image
+  add_stamp = true
+}

@@ -1,0 +1,21 @@
+//------------------------------------------------
+// uWMMHR config block
+
+ProcessConfig = uWMMHR
+{
+   AppTick   = 1
+   CommsTick = 1
+
+   // Relative path from mission directory to WMMHR coefficient file
+   cof_path   = ../../assets/earth/WMMHR_2025-2030.COF
+
+   // Input MOOS variables (configurable)
+   lat_var    = NAV_LAT
+   lon_var    = NAV_LONG
+   alt_var    = NAV_ALT
+
+   // Prefix for published MOOS variables
+   // WMMHR_DECL  = "decl=<deg>,decl_uncty=<deg>"
+   // WMMHR_STATE = "decl=...,incl=...,F=..., etc. with uncertainties"
+   pub_prefix = WMMHR
+}

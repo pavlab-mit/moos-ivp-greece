@@ -1,0 +1,47 @@
+//------------------------------------------
+// pAUV_EKF config block — Nucleus1000 DVL instance
+
+ProcessConfig = pAUV_EKF_NUC
+{
+  AppTick   = 40
+  CommsTick = 10
+
+  ekf_update_frq = 40.0
+
+  dvl_stem  = /std_dvl_NUC
+  ahrs_stem = /std_ahrs_NUC
+
+  depth_var         = NAV_DEPTH
+  gnss_position_var = GNSS_STATE
+  hdop_threshold    = 5.0
+
+  // ASV eval mode: GNSS blocked unless EKF_GNSS_RESET received
+  asv_eval_mode      = true
+  gnss_reset_window  = 3.0
+
+  sensor_timeout_threshold = 5.0
+
+  ekf_3d_suffix    = _NUC
+  ekf_3d_dr_suffix = _DR_NUC
+  ekf_2d_suffix    = _2D_NUC
+  ekf_2d_dr_suffix = _2D_DR_NUC
+
+  sigma_x = 0.1
+  sigma_y = 0.1
+  sigma_z = 0.05
+  sigma_u = 0.05
+  sigma_v = 0.05
+  sigma_w = 0.05
+
+  sigma_dvl_u = 0.01
+  sigma_dvl_v = 0.01
+  sigma_dvl_w = 0.01
+  sigma_depth = 0.02
+  sigma_range = 5
+  sigma_gnss  = 2.0
+
+  logging = true
+  log_directory = ./logs/$(MISSION_NAME)
+
+  debug = false
+}

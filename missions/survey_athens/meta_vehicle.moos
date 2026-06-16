@@ -1,0 +1,69 @@
+ServerHost = localhost
+ServerPort = $(MOOS_PORT)
+Community  = $(VNAME)
+
+#include plugs/shared/plug_origin_warp.moos
+
+//------------------------------------------------------------
+ProcessConfig = ANTLER
+{
+  MSBetweenLaunches = 100
+
+  Run = MOOSDB             @ NewConsole = false
+  Run = pShare             @ NewConsole = false
+  Run = pLogger            @ NewConsole = false
+  Run = pNodeReporter      @ NewConsole = false
+  Run = uProcessWatch      @ NewConsole = false
+  Run = pHelmIvP           @ NewConsole = false
+  Run = pHostInfo          @ NewConsole = false
+  Run = uFldNodeBroker     @ NewConsole = false
+  Run = pDeadManPost       @ NewConsole = false
+  Run = pRealm             @ NewConsole = false
+  Run = uFldMessageHandler @ NewConsole = false
+  Run = pContactMgrV20     @ NewConsole = false
+  Run = uLoadWatch         @ NewConsole = false
+
+  #ifdef XMODE SIM
+    Run = uSimMarineV22      @ NewConsole = false
+    Run = pMarinePIDV22      @ NewConsole = false
+  #elseifdef XMODE BBOAT
+    //Run = iDoodleLabs        @ NewConsole = false
+    //Run = uRTCMBroker          @ NewConsole = false
+
+    Run = iBackSeatBroker    @ NewConsole = false
+    // Run = uBBBundler         @ NewConsole = false
+    Run = pBB_DGPS_EKF       @ NewConsole = false
+    Run = pMarinePIDV22        @ NewConsole = false
+    Run = pThrustMix           @ NewConsole = false
+    Run = pBB_Health         @ NewConsole = false
+  #endif
+}
+
+// Shared
+#include plugs/shared/plug_pShare.moos
+#include plugs/shared/plug_pHostInfo.moos
+#include plugs/shared/plug_uProcessWatch.moos
+
+// Core
+#include plugs/blueboat/plug_pLogger.moos
+#include plugs/blueboat/plug_uFldMessageHandler.moos
+#include plugs/blueboat/plug_pContactMgrV20.moos
+#include plugs/blueboat/plug_uMemWatch.moos
+#include plugs/blueboat/plug_pDeadManPost.moos
+#include plugs/blueboat/plug_uLoadWatch.moos
+#include plugs/blueboat/plug_pNodeReporter.moos
+#include plugs/blueboat/plug_pRealm.moos
+#include plugs/blueboat/plug_pHelmIvP.moos
+#include plugs/blueboat/plug_uFldNodeBroker.moos
+
+#ifdef XMODE SIM
+  #include plugs/blueboat/plug_uSimMarineV22.moos
+  #include plugs/blueboat/plug_pMarinePIDV22.moos
+  #include plugs/blueboat/plug_uSideScanSim.moos
+#elseifdef XMODE BBOAT
+  #include plugs/blueboat/plug_iBackSeatBroker.moos
+  #include plugs/blueboat/plug_pBB_DGPS_EKF.moos
+  #include plugs/blueboat/plug_pMarinePIDV22.moos
+  #include plugs/blueboat/plug_pThrustMix.moos
+  #include plugs/blueboat/plug_pBB_Health.moos
+#endif
