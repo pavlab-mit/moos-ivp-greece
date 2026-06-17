@@ -237,6 +237,30 @@ it: that boat simply shows no RF data, and any station the shore radio hears for
 it appears under `radio.unmapped` until the MAC is supplied. The MAC map is the
 single source of attribution; nothing else changes when you fill it in.
 
+### 4.1 Filling in the MAC map on-site (`--discover`)
+
+To avoid hunting for MACs by hand, `collect.py --discover` polls the shore radio
+once and prints every station it hears — MAC, RSSI, mesh TQ, MCS, hop, and the
+boat each maps to (or `UNMAPPED`), plus the `10.223.x.y` mgmt address each MAC
+implies (cross-check against the radio label / inventory):
+
+```text
+./collect.py --config fleet.greece.json --discover
+```
+
+For hands-off, one-boat-at-a-time alignment, power up a single boat and let the
+tool write the mapping for you:
+
+```text
+# with only asha powered and linked:
+./collect.py --config fleet.greece.json --discover --assign asha
+```
+
+If exactly one *unmapped* MAC is heard it is written to `radio.macs.asha` in the
+config; if it hears zero or more than one unmapped MAC it refuses (so you can't
+mis-assign). Work down the fleet boat by boat, then
+`sudo systemctl restart fleet-collector` to pick up the filled-in map.
+
 > **Per-site files.** `fleet.greece.json` uses the formula addressing above
 > (shore uplink `10.1.0.<id>`, shore radio `10.1.0.3`). `fleet.mit.json` shares
 > the same internal `10.<id>.x` plan but the lab uses a different shore network,

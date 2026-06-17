@@ -592,6 +592,73 @@ class Collector:
         block.update(self._radio_summary or {})
         return block, per_boat
 
+    def discover_radios(self, assign=None, config_path=None) -> int:
+        """On-site helper (no daemon): poll the shore radio once and print every
+        station MAC it hears, with RSSI / TQ / MCS / hop and the boat each maps
+        to (or UNMAPPED). With assign=<boat>, if exactly one *unmapped* MAC is
+        heard, write it into the config's radio.macs for that boat -- so the
+        field workflow is: power one boat, run with --assign <boat>, repeat."""
+        if not self.radio_enabled:
+            print("radio subsystem is disabled in this config (set radio.enabled=true).",
+                  file=sys.stderr)
+            return 1
+        print(f"polling shore radio at {self.radio_api_ip} (user {self.radio_user!r}) ...")
+        ls = self._radio_poll_blocking()
+        if ls is None:
+            print(f"could not read linkstate from {self.radio_api_ip} -- radio "
+                  f"unreachable, JSON-RPC disabled, or bad credentials.", file=sys.stderr)
+            return 2
+
+        stations, summary = self._parse_linkstate(ls)
+        name_by_mac = {m: n for n, m in self.mac_by_name.items()}
+        print(f"shore radio OK: noise {summary.get('noise')} dBm, "
+              f"channel {summary.get('oper_chan')} ({summary.get('oper_freq')} MHz), "
+              f"{len(stations)} station(s) heard\n")
+
+        hdr = (f'  {"MAC":17}  {"RSSI":>5}  {"TQ":>4}  {"MCS":>3}  {"hop":6}  '
+               f'{"implied mgmt":15}  boat')
+        print(hdr)
+        print("  " + "-" * (len(hdr) - 2))
+        unmapped = []
+        for mac, r in sorted(stations.items(),
+                             key=lambda kv: (kv[1].get("rssi") if kv[1].get("rssi") is not None else -999),
+                             reverse=True):
+            boat = name_by_mac.get(mac)
+            if not boat:
+                unmapped.append(mac)
+            print(f'  {mac:17}  {str(r.get("rssi","?")):>5}  {str(r.get("tq","?")):>4}  '
+                  f'{str(r.get("mcs","?")):>3}  {str(r.get("hop_status","?")):6}  '
+                  f'{_mgmt_from_mac(mac):15}  {boat or "UNMAPPED"}')
+        print()
+
+        if assign:
+            known = {b["name"] for b in self.boats}
+            if assign not in known:
+                print(f"--assign: {assign!r} is not a boat in this config "
+                      f"(have: {', '.join(sorted(known))}).", file=sys.stderr)
+                return 3
+            if len(unmapped) != 1:
+                msg = ("no unmapped MACs heard -- is the boat powered and linked?"
+                       if not unmapped else
+                       f"{len(unmapped)} unmapped MACs heard ({', '.join(unmapped)}); "
+                       f"power up ONE boat at a time so the new MAC is unambiguous.")
+                print(f"--assign: {msg}", file=sys.stderr)
+                return 4
+            mac = unmapped[0]
+            if not config_path:
+                print(f"--assign: would set {assign} = {mac}, but no config path to write.",
+                      file=sys.stderr)
+                return 5
+            _write_mac(config_path, assign, mac)
+            print(f"assigned radio.macs.{assign} = {mac}  (written to {config_path})")
+            print("apply it with:  sudo systemctl restart fleet-collector")
+        elif unmapped:
+            print(f"{len(unmapped)} unmapped MAC(s). Fill radio.macs in the config, or re-run "
+                  f"with --assign <boat> while only that boat is powered.")
+        else:
+            print("all heard radios are mapped to boats.")
+        return 0
+
     async def sweep(self) -> dict:
         # Build the full probe set (shore radio + every rung of every boat) and
         # fire them all concurrently -- one cycle is ~1 + 3*len(boats) pings.
@@ -794,6 +861,29 @@ def _telemetry_cell(t) -> str:
     return summ
 
 
+def _mgmt_from_mac(mac: str) -> str:
+    """The 10.223.x.y management address DoodleLabs derives from a MAC's last
+    two octets (see 12_doodle_labs_radio.md §3.3) -- handy to cross-check a
+    discovered MAC against the radio inventory / the address on the label."""
+    try:
+        o = mac.split(":")
+        return f"10.223.{int(o[-2], 16)}.{int(o[-1], 16)}"
+    except Exception:
+        return "?"
+
+
+def _write_mac(config_path: str, boat: str, mac: str):
+    """Set radio.macs.<boat> = <mac> in the JSON config, atomically. Preserves
+    every other key (comments are plain keys, so they survive)."""
+    with open(config_path) as f:
+        cfg = json.load(f)
+    cfg.setdefault("radio", {}).setdefault("macs", {})[boat] = mac.lower()
+    tmp = f"{config_path}.tmp.{os.getpid()}"
+    with open(tmp, "w") as f:
+        json.dump(cfg, f, indent=2)
+    os.replace(tmp, config_path)
+
+
 def load_config(path: str) -> dict:
     with open(path) as f:
         return json.load(f)
@@ -810,6 +900,12 @@ def main():
     ap.add_argument("--interval", type=float, default=None, help="override ping_interval_s")
     ap.add_argument("--once", action="store_true", help="single sweep then exit")
     ap.add_argument("--quiet", action="store_true", help="suppress per-cycle table")
+    ap.add_argument("--discover", action="store_true",
+                    help="poll the shore radio once, print every station MAC it hears "
+                         "and which boat it maps to, then exit (no daemon, no snapshot)")
+    ap.add_argument("--assign", metavar="BOAT", default=None,
+                    help="with --discover: if exactly one unmapped MAC is heard, write it "
+                         "to radio.macs.<BOAT> in the config (power one boat at a time)")
     args = ap.parse_args()
 
     try:
@@ -832,6 +928,8 @@ def main():
     if not c.boats:
         print("No active boats in config; nothing to probe.", file=sys.stderr)
         sys.exit(1)
+    if args.discover:
+        sys.exit(c.discover_radios(assign=args.assign, config_path=args.config))
     try:
         asyncio.run(c.run(once=args.once, quiet=args.quiet))
     except KeyboardInterrupt:
