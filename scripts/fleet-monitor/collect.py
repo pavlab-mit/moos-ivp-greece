@@ -182,6 +182,11 @@ class Collector:
         self.site = cfg.get("site", "")
         self.shore_radio_ip = cfg.get("shore_radio_ip", "10.1.0.3")
         self.interval = float(cfg.get("ping_interval_s", 2.0))
+        # Snapshot write cadence, decoupled from pings: connectivity is
+        # slow-changing, but Subsystem-B telemetry (positions) arrives ~2 Hz,
+        # so we ping on `interval` but assemble+write on this (faster) rate.
+        self.snapshot_interval = float(cfg.get("snapshot_interval_s", self.interval))
+        self._keyed = None  # latest ping results, refreshed by the ping loop
         self.timeout = float(cfg.get("ping_timeout_s", 1.0))
         self.window = int(cfg.get("history_window", 30))
         self.snapshot_path = cfg.get("snapshot_path", "fleet_status.json")
@@ -659,17 +664,35 @@ class Collector:
             print("all heard radios are mapped to boats.")
         return 0
 
-    async def sweep(self) -> dict:
-        # Build the full probe set (shore radio + every rung of every boat) and
-        # fire them all concurrently -- one cycle is ~1 + 3*len(boats) pings.
+    async def _ping_all(self):
+        # Fire one ICMP sweep of every rung (shore + per-boat) concurrently and
+        # stash the latest results. Runs on the slow ping cadence.
         jobs = {("shore", "shore_radio"): self._probe(self.shore_radio_ip)}
         for b in self.boats:
             for rung, ip in b["rung_ips"].items():
                 jobs[(b["name"], rung)] = self._probe(ip)
-
         results = await asyncio.gather(*jobs.values())
-        keyed = dict(zip(jobs.keys(), results))
+        self._keyed = dict(zip(jobs.keys(), results))
 
+    async def sweep(self) -> dict:
+        """One ping sweep + assemble (used to prime, and for --once)."""
+        await self._ping_all()
+        return self._assemble()
+
+    async def _ping_loop(self):
+        """Re-ping on the slow cadence; connectivity is slow-changing."""
+        while True:
+            await asyncio.sleep(self.interval)
+            try:
+                await self._ping_all()
+            except Exception as e:
+                print(f"[{_iso(time.time())}] ping error: {e}", file=sys.stderr)
+
+    def _assemble(self) -> dict:
+        # Build a snapshot from the LAST ping results plus the freshest
+        # telemetry (Subsystem B, ~2 Hz) and radio (Subsystem C). No pinging
+        # here, so it can be written faster than the ping cadence.
+        keyed = self._keyed
         now = time.time()
         shore = keyed[("shore", "shore_radio")]
         shore_up = shore["alive"]
@@ -758,18 +781,26 @@ class Collector:
             await self._do_radio_poll()
             if not once:
                 asyncio.ensure_future(self._radio_loop())
+        # Prime one ping sweep so the first snapshot carries connectivity.
+        snap = await self.sweep()
+        self.write_snapshot(snap)
+        if not quiet:
+            print(_render_table(snap))
+        if once:
+            return
+        # Decouple: pings refresh on `interval`; snapshots are assembled from
+        # the freshest telemetry and written on `snapshot_interval` (faster).
+        asyncio.ensure_future(self._ping_loop())
         while True:
             t0 = time.time()
             try:
-                snap = await self.sweep()
+                snap = self._assemble()
                 self.write_snapshot(snap)
                 if not quiet:
                     print(_render_table(snap))
             except Exception as e:  # never let one bad cycle kill the daemon
-                print(f"[{_iso(time.time())}] sweep error: {e}", file=sys.stderr)
-            if once:
-                return
-            await asyncio.sleep(max(0.0, self.interval - (time.time() - t0)))
+                print(f"[{_iso(time.time())}] write error: {e}", file=sys.stderr)
+            await asyncio.sleep(max(0.0, self.snapshot_interval - (time.time() - t0)))
 
 
 # ---------------------------------------------------------------------------
