@@ -28,6 +28,7 @@ ProcessConfig = uFldShoreBroker
   qbridge  = AUTONOMY_MODE
   qbridge  = WAYPOINT_UPDATE, WAYPOINTS_CLEAR, STATION_UPDATE
   qbridge  = LOITER_UPDATE
+  qbridge  = LAWNMOWER_UPDATE
   qbridge  = TIMESTAMP_FLAG
 
 	app_logging = off
