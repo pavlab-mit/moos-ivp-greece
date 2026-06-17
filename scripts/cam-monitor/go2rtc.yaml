@@ -1,0 +1,28 @@
+# go2rtc — Tapo RTSP -> WebRTC relay for the dashboard Camera tab.
+#
+# go2rtc ingests the camera's RTSP ONCE and republishes it to every dashboard
+# viewer over WebRTC (sub-second, H.264 passthrough -- no transcode, light on a
+# Pi). Centralizing the single RTSP pull here also avoids the camera's limit on
+# simultaneous RTSP clients, the same reason the fleet collector probes once.
+#
+# Credentials are NOT stored here. ${CAM_USER}/${CAM_PASS} are expanded from the
+# environment at startup (systemd EnvironmentFile=credentials.env), so this file
+# is safe to commit.
+#
+# Embed in the dashboard (served over http on the LAN):
+#   http://<pi>:1984/webrtc.html?src=tapo         # low-latency WebRTC player
+#   http://<pi>:1984/stream.html?src=tapo          # auto (WebRTC->MSE->HLS)
+
+api:
+  listen: ":1984"          # web UI, API, and the embeddable player pages
+
+webrtc:
+  listen: ":8555"          # WebRTC TCP candidate (open this port on the Pi/LAN)
+
+log:
+  level: info
+
+streams:
+  # HD main stream (default view) and the low-res substream (fallback / weak link)
+  tapo:    rtsp://${CAM_USER}:${CAM_PASS}@10.1.0.15:554/stream1
+  tapo_sd: rtsp://${CAM_USER}:${CAM_PASS}@10.1.0.15:554/stream2

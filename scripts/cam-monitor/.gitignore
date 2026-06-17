@@ -1,0 +1,7 @@
+# Never commit real camera creds
+credentials.env
+# Local Python venv (pytapo) and downloaded go2rtc binary
+venv/
+bin/
+__pycache__/
+*.pyc

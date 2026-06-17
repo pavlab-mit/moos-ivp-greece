@@ -189,6 +189,41 @@
     border-radius:4px; font-size:12px; }
   .muted-note { color:var(--muted); font-size:13px; padding:28px 20px; text-align:center; }
 
+  /* ---- Camera tab ---- */
+  .cam-status { font-size:13px; color:var(--text2); margin-bottom:12px; }
+  .cam-status .on { color:var(--green); font-weight:600; }
+  .cam-status .off { color:var(--red); font-weight:600; }
+  .cam-status .cool { color:var(--yellow); font-weight:600; }
+  .cam-wrap { display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; }
+  .cam-video { flex:1 1 460px; min-width:300px; }
+  .cam-frame { position:relative; width:100%; aspect-ratio:16/9; background:#000;
+    border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .cam-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .cam-frame .placeholder { position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; color:var(--muted); font-size:13px; text-align:center; padding:0 16px; }
+  .cam-controls { flex:0 0 240px; display:flex; flex-direction:column; gap:16px; }
+  .cam-group { background:var(--panel); border:1px solid var(--border);
+    border-radius:var(--radius); padding:12px 14px; box-shadow:var(--shadow); }
+  .cam-label { font-size:11px; color:var(--muted); text-transform:uppercase;
+    letter-spacing:.4px; margin-bottom:8px; }
+  .cam-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .ptz-pad { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,40px);
+    grid-template-areas:". up ." "left . right" ". down ."; gap:6px; margin-bottom:10px; }
+  .ptz { background:var(--raised); color:var(--text); border:1px solid var(--border);
+    border-radius:7px; font-size:16px; cursor:pointer; }
+  .ptz:hover { border-color:var(--muted); }
+  .ptz:active { transform:scale(.94); }
+  .ptz-step { grid-area:2/2/3/3; display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .seg { background:var(--raised); color:var(--text2); border:1px solid var(--border);
+    border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; }
+  .seg:hover { color:var(--text); border-color:var(--muted); }
+  .seg.active { color:var(--text); border-color:var(--blue); background:rgba(38,139,210,.14); }
+  #preset-sel { background:var(--raised); color:var(--text); border:1px solid var(--border);
+    border-radius:6px; padding:5px 8px; font-size:12px; flex:1; min-width:80px; }
+  .cam-note { margin-top:12px; font-size:12px; color:var(--muted); min-height:1em; }
+  .cam-note.err { color:var(--red); }
+
   footer { padding:10px 20px 24px; color:var(--muted); font-size:11.5px; }
 </style>
 </head>
@@ -198,6 +233,7 @@
   <nav class="tabs" id="tabs">
     <button class="tab active" data-view="fleet">Fleet</button>
     <button class="tab" data-view="radio">Radio</button>
+    <button class="tab" data-view="camera">Camera</button>
   </nav>
   <div class="summary" id="summary"></div>
   <div class="right">
@@ -209,6 +245,53 @@
 <main>
   <section class="view active" id="view-fleet"><div class="grid" id="grid"></div></section>
   <section class="view" id="view-radio"></section>
+  <section class="view" id="view-camera">
+    <div class="cam-status" id="cam-status">camera: connecting…</div>
+    <div class="cam-wrap">
+      <div class="cam-video"><div class="cam-frame" id="cam-frame"></div></div>
+      <div class="cam-controls">
+        <div class="cam-group">
+          <div class="cam-label">pan / tilt</div>
+          <div class="ptz-pad">
+            <button class="ptz" data-pan="0"  data-tilt="1"  style="grid-area:up">▲</button>
+            <button class="ptz" data-pan="-1" data-tilt="0"  style="grid-area:left">◀</button>
+            <span class="ptz-step" id="ptz-step">15°</span>
+            <button class="ptz" data-pan="1"  data-tilt="0"  style="grid-area:right">▶</button>
+            <button class="ptz" data-pan="0"  data-tilt="-1" style="grid-area:down">▼</button>
+          </div>
+          <div class="cam-row" id="step-row">
+            <span class="cam-label">step</span>
+            <button class="seg" data-step="5">5°</button>
+            <button class="seg active" data-step="15">15°</button>
+            <button class="seg" data-step="30">30°</button>
+          </div>
+        </div>
+        <div class="cam-group">
+          <div class="cam-label">spotlight</div>
+          <div class="cam-row">
+            <button class="seg" data-light="on">On</button>
+            <button class="seg" data-light="off">Off</button>
+          </div>
+          <div class="cam-label" style="margin-top:10px">night vision (IR)</div>
+          <div class="cam-row">
+            <button class="seg" data-ir="auto">Auto</button>
+            <button class="seg" data-ir="on">On</button>
+            <button class="seg" data-ir="off">Off</button>
+          </div>
+        </div>
+        <div class="cam-group">
+          <div class="cam-label">presets</div>
+          <div class="cam-row">
+            <select id="preset-sel"><option value="">—</option></select>
+            <button class="seg" id="preset-go">Go</button>
+            <button class="seg" id="preset-save">Save…</button>
+          </div>
+          <div class="cam-row"><button class="seg" id="cam-reload">⟳ reload video</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="cam-note" id="cam-note"></div>
+  </section>
 </main>
 <footer id="foot"></footer>
 
@@ -219,6 +302,17 @@
 const params = new URLSearchParams(location.search);
 const SRC  = params.get("src")  || "fleet_status.json";
 const POLL = (parseFloat(params.get("poll")) || 2) * 1000;
+
+// Camera tab config (defined early so applyView()->camOnView() is safe on load).
+// Video = go2rtc WebRTC; control = the lockout-safe cam-control service. Both on
+// the same host as this dashboard, own ports. Override via URL params if needed.
+const CAM = {
+  host:       params.get("camhost")    || location.hostname || "10.1.0.10",
+  ctrlPort:   params.get("ctrlport")   || "8082",
+  go2rtcPort: params.get("go2rtcport") || "1984",
+  src:        params.get("camsrc")     || "tapo",
+  step:       15,
+};
 
 // ---- theme: auto by time of day (light 07:00–19:00) + manual override ----
 const THEMES = ["auto", "light", "dark"];
@@ -246,6 +340,7 @@ function applyView() {
     t.classList.toggle("active", t.dataset.view === view));
   document.querySelectorAll(".view").forEach(v =>
     v.classList.toggle("active", v.id === "view-" + view));
+  camOnView();   // lazy-start / stop the camera stream with the tab (hoisted)
 }
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   view = t.dataset.view; localStorage.setItem("fm-view", view); applyView();
@@ -500,6 +595,109 @@ async function tick() {
 }
 tick();
 setInterval(tick, POLL);
+
+// ---- Camera tab ----------------------------------------------------------
+function camNote(msg, isErr) {
+  const el = document.getElementById("cam-note");
+  if (!el) return;
+  el.textContent = msg || "";
+  el.className = "cam-note" + (isErr ? " err" : "");
+}
+async function camCtrl(path, method, body) {
+  const url = `http://${CAM.host}:${CAM.ctrlPort}${path}`;
+  const opt = { method: method || "GET" };
+  if (body) { opt.headers = { "Content-Type": "application/json" }; opt.body = JSON.stringify(body); }
+  const res = await fetch(url, opt);
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 503) throw new Error(data.error || "camera cooling down (lockout guard)");
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  return data;
+}
+function camPTZ(panDir, tiltDir) {
+  camCtrl("/cam/ptz", "POST", { pan: panDir * CAM.step, tilt: tiltDir * CAM.step })
+    .then(() => camNote(`moved (${panDir*CAM.step}°, ${tiltDir*CAM.step}°)`))
+    .catch(e => camNote(e.message, true));
+}
+function camSimple(path, body, okMsg) {
+  camCtrl(path, "POST", body).then(() => camNote(okMsg)).catch(e => camNote(e.message, true));
+}
+function camLoadPresets() {
+  const sel = document.getElementById("preset-sel");
+  if (!sel) return;
+  camCtrl("/cam/presets").then(d => {
+    const items = (d.result || []);
+    sel.innerHTML = '<option value="">—</option>' +
+      items.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+  }).catch(() => {});
+}
+function camStatus() {
+  if (view !== "camera") return;                 // only poll while the tab is open
+  const el = document.getElementById("cam-status");
+  camCtrl("/cam/status").then(s => {
+    let state = s.cooldown ? `<span class="cool">cooling down ${s.cooldown_s}s</span>`
+              : s.online   ? `<span class="on">online</span>`
+                           : `<span class="off">offline</span>`;
+    const name = s.model ? ` · ${esc(s.model)}${s.name ? " ("+esc(s.name)+")" : ""}` : "";
+    el.innerHTML = `camera ${state}${name} · ${esc(s.cam_ip || CAM.host)}`;
+  }).catch(e => { el.innerHTML = `camera <span class="off">control unreachable</span> — is cam-control running?`; });
+}
+
+// Lazy stream: only attach the WebRTC iframe while the Camera tab is visible,
+// and tear it down when you leave, so go2rtc isn't streaming to a hidden tab.
+function camOnView() {
+  const frame = document.getElementById("cam-frame");
+  if (!frame) return;
+  if (view === "camera") {
+    if (!frame.querySelector("iframe")) {
+      frame.innerHTML = "";
+      const ph = document.createElement("div");          // behind the iframe
+      ph.className = "placeholder";
+      ph.textContent = "connecting to stream… (needs go2rtc running on the Pi)";
+      frame.appendChild(ph);
+      const f = document.createElement("iframe");         // on top; clears ph on load
+      f.allow = "autoplay; fullscreen";
+      f.onload = () => ph.remove();
+      f.src = `http://${CAM.host}:${CAM.go2rtcPort}/stream.html?src=${encodeURIComponent(CAM.src)}`;
+      frame.appendChild(f);
+    }
+    camStatus();
+    camLoadPresets();
+  } else {
+    frame.innerHTML = "";   // stop the WebRTC session on leave
+  }
+}
+
+function initCamera() {
+  document.querySelectorAll(".ptz").forEach(b => b.onclick = () =>
+    camPTZ(parseInt(b.dataset.pan, 10), parseInt(b.dataset.tilt, 10)));
+  document.querySelectorAll("#step-row .seg").forEach(b => b.onclick = () => {
+    CAM.step = parseInt(b.dataset.step, 10);
+    document.querySelectorAll("#step-row .seg").forEach(x => x.classList.toggle("active", x === b));
+    document.getElementById("ptz-step").textContent = CAM.step + "°";
+  });
+  document.querySelectorAll("[data-light]").forEach(b => b.onclick = () =>
+    camSimple("/cam/light", { on: b.dataset.light === "on" }, `spotlight ${b.dataset.light}`));
+  document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () =>
+    camSimple("/cam/ir", { mode: b.dataset.ir }, `IR ${b.dataset.ir}`));
+  document.getElementById("preset-go").onclick = () => {
+    const id = document.getElementById("preset-sel").value;
+    if (id) camSimple("/cam/preset", { action: "goto", id }, "recalled preset");
+  };
+  document.getElementById("preset-save").onclick = () => {
+    const name = prompt("Save current position as preset named:");
+    if (name) camCtrl("/cam/preset", "POST", { action: "save", name })
+      .then(() => { camNote("saved preset “" + name + "”"); camLoadPresets(); })
+      .catch(e => camNote(e.message, true));
+  };
+  document.getElementById("cam-reload").onclick = () => {
+    const frame = document.getElementById("cam-frame");
+    if (frame) frame.innerHTML = "";   // drop the current session, then rebuild
+    camOnView();
+  };
+  setInterval(camStatus, 6000);
+  camOnView();   // honor the restored tab on load
+}
+initCamera();
 </script>
 </body>
 </html>
