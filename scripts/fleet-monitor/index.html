@@ -255,28 +255,15 @@
           <div class="ptz-pad">
             <button class="ptz" data-pan="0"  data-tilt="1"  style="grid-area:up">▲</button>
             <button class="ptz" data-pan="-1" data-tilt="0"  style="grid-area:left">◀</button>
-            <span class="ptz-step" id="ptz-step">15°</span>
+            <span class="ptz-step" id="ptz-step">M</span>
             <button class="ptz" data-pan="1"  data-tilt="0"  style="grid-area:right">▶</button>
             <button class="ptz" data-pan="0"  data-tilt="-1" style="grid-area:down">▼</button>
           </div>
           <div class="cam-row" id="step-row">
             <span class="cam-label">step</span>
-            <button class="seg" data-step="5">5°</button>
-            <button class="seg active" data-step="15">15°</button>
-            <button class="seg" data-step="30">30°</button>
-          </div>
-        </div>
-        <div class="cam-group">
-          <div class="cam-label">spotlight</div>
-          <div class="cam-row">
-            <button class="seg" data-light="on">On</button>
-            <button class="seg" data-light="off">Off</button>
-          </div>
-          <div class="cam-label" style="margin-top:10px">night vision (IR)</div>
-          <div class="cam-row">
-            <button class="seg" data-ir="auto">Auto</button>
-            <button class="seg" data-ir="on">On</button>
-            <button class="seg" data-ir="off">Off</button>
+            <button class="seg" data-size="1">S</button>
+            <button class="seg active" data-size="2">M</button>
+            <button class="seg" data-size="3">L</button>
           </div>
         </div>
         <div class="cam-group">
@@ -286,7 +273,7 @@
             <button class="seg" id="preset-go">Go</button>
             <button class="seg" id="preset-save">Save…</button>
           </div>
-          <div class="cam-row"><button class="seg" id="cam-reload">⟳ reload video</button></div>
+          <div class="cam-row" style="margin-top:8px"><button class="seg" id="cam-reload">⟳ reload video</button></div>
         </div>
       </div>
     </div>
@@ -311,7 +298,7 @@ const CAM = {
   ctrlPort:   params.get("ctrlport")   || "8082",
   go2rtcPort: params.get("go2rtcport") || "1984",
   src:        params.get("camsrc")     || "tapo",
-  step:       15,
+  size:       2,        // PTZ step size 1=S 2=M 3=L (ONVIF move magnitude)
 };
 
 // ---- theme: auto by time of day (light 07:00–19:00) + manual override ----
@@ -614,20 +601,17 @@ async function camCtrl(path, method, body) {
   return data;
 }
 function camPTZ(panDir, tiltDir) {
-  camCtrl("/cam/ptz", "POST", { pan: panDir * CAM.step, tilt: tiltDir * CAM.step })
-    .then(() => camNote(`moved (${panDir*CAM.step}°, ${tiltDir*CAM.step}°)`))
+  camCtrl("/cam/ptz", "POST", { pan: panDir, tilt: tiltDir, size: CAM.size })
+    .then(() => camNote("moved"))
     .catch(e => camNote(e.message, true));
-}
-function camSimple(path, body, okMsg) {
-  camCtrl(path, "POST", body).then(() => camNote(okMsg)).catch(e => camNote(e.message, true));
 }
 function camLoadPresets() {
   const sel = document.getElementById("preset-sel");
   if (!sel) return;
   camCtrl("/cam/presets").then(d => {
-    const items = (d.result || []);
+    const items = ((d.result && d.result.presets) || []);
     sel.innerHTML = '<option value="">—</option>' +
-      items.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");
+      items.map(p => `<option value="${esc(p.token)}">${esc(p.name)}</option>`).join("");
   }).catch(() => {});
 }
 function camStatus() {
@@ -668,20 +652,18 @@ function camOnView() {
 }
 
 function initCamera() {
+  const SIZE_LABEL = { 1: "S", 2: "M", 3: "L" };
   document.querySelectorAll(".ptz").forEach(b => b.onclick = () =>
     camPTZ(parseInt(b.dataset.pan, 10), parseInt(b.dataset.tilt, 10)));
   document.querySelectorAll("#step-row .seg").forEach(b => b.onclick = () => {
-    CAM.step = parseInt(b.dataset.step, 10);
+    CAM.size = parseInt(b.dataset.size, 10);
     document.querySelectorAll("#step-row .seg").forEach(x => x.classList.toggle("active", x === b));
-    document.getElementById("ptz-step").textContent = CAM.step + "°";
+    document.getElementById("ptz-step").textContent = SIZE_LABEL[CAM.size] || "M";
   });
-  document.querySelectorAll("[data-light]").forEach(b => b.onclick = () =>
-    camSimple("/cam/light", { on: b.dataset.light === "on" }, `spotlight ${b.dataset.light}`));
-  document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () =>
-    camSimple("/cam/ir", { mode: b.dataset.ir }, `IR ${b.dataset.ir}`));
   document.getElementById("preset-go").onclick = () => {
-    const id = document.getElementById("preset-sel").value;
-    if (id) camSimple("/cam/preset", { action: "goto", id }, "recalled preset");
+    const token = document.getElementById("preset-sel").value;
+    if (token) camCtrl("/cam/preset", "POST", { action: "goto", token })
+      .then(() => camNote("recalled preset")).catch(e => camNote(e.message, true));
   };
   document.getElementById("preset-save").onclick = () => {
     const name = prompt("Save current position as preset named:");

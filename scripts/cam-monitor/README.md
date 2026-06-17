@@ -14,7 +14,7 @@ small services run on the shoreside Pi next to the fleet-monitor services:
 | Service | What it does | Port |
 |---|---|---|
 | `cam-go2rtc` | Pulls the camera's RTSP **once** and republishes it to every viewer as **WebRTC** (sub-second, H.264 passthrough — no transcode). | 1984 (player/API), 8555 (WebRTC) |
-| `cam-control` | Lockout-safe HTTP wrapper around the Tapo control API (`pytapo`) — pan/tilt, spotlight, IR, presets. | 8082 |
+| `cam-control` | Lockout-safe HTTP wrapper around **ONVIF** (`onvif-zeep`) — pan/tilt + presets. | 8082 |
 
 Browsers can't play RTSP and the dashboard is a static page, so both pieces are
 needed. Centralizing the single RTSP pull in go2rtc also sidesteps the camera's
@@ -26,14 +26,19 @@ fleet collector.
 Tapo cameras **ban a client IP after a few failed logins**. Everything here is
 built to never become a login storm:
 
-- `cam_control.py` logs in **once** and reuses the session for all requests;
-  it never attempts more than one login per 15 s; after 2 consecutive failures
-  it stops touching the camera for 180 s and returns HTTP 503, never retrying.
-- It only ever uses the configured Camera-Account creds — **no guessing,
-  rotating, or brute-forcing**.
+- Control is over **ONVIF**, using the same Camera-Account creds as RTSP — the
+  path proven to work on this fleet. The Tapo `pytapo` API is **not** used: it
+  needs the TP-Link *cloud* account (never set up here), returns "Invalid
+  authentication data", and hammering it is what trips the lockout. Spotlight
+  and IR are only reachable via pytapo, so they are intentionally not exposed.
+- `cam_control.py` connects **once** and reuses the ONVIF session for all
+  requests; it never reconnects more than once per 15 s; after 2 consecutive
+  failures it stops touching the camera for 180 s and returns HTTP 503, never
+  retrying. It only ever uses the configured creds — **no guessing or
+  brute-forcing**.
 - `go2rtc` reconnects to RTSP on its own, so the installer **enables but does
   not start** the services. Confirm the creds are right *before* starting, and
-  if a login fails repeatedly, **stop and wait out the lockout** rather than
+  if anything fails repeatedly, **stop and wait out the lockout** rather than
   looping.
 
 ## Prerequisites
@@ -54,7 +59,7 @@ chmod 600 credentials.env
 sudo RUN_USER=mgr ./deploy/install.sh
 ```
 
-The installer creates a `venv` (with `pytapo`), downloads the `go2rtc` binary
+The installer creates a `venv` (with `onvif-zeep`), downloads the `go2rtc` binary
 into `bin/`, writes both systemd units, and **enables but does not start** them.
 
 ## Start (after confirming creds)
@@ -82,11 +87,13 @@ If the Pi has a firewall, open `1984/tcp`, `8555/tcp`, and `8082/tcp` on the LAN
 | Method + path | Body | Action |
 |---|---|---|
 | `GET /cam/status` | — | session/cooldown state + device info |
-| `POST /cam/ptz` | `{"pan":deg,"tilt":deg}` | relative move (pan is discrete/bounded) |
-| `POST /cam/light` | `{"on":true\|false}` | white spotlight |
-| `POST /cam/ir` | `{"mode":"on\|off\|auto"}` | night-vision / infrared |
-| `GET /cam/presets` | — | list saved presets |
-| `POST /cam/preset` | `{"action":"goto","id":..}` / `{"action":"save","name":..}` | recall / save |
+| `POST /cam/ptz` | `{"pan":-1\|0\|1,"tilt":-1\|0\|1,"size":1\|2\|3}` | pan = discrete RelativeMove, tilt = brief ContinuousMove |
+| `GET /cam/presets` | — | list saved presets (`token` + `name`) |
+| `POST /cam/preset` | `{"action":"goto","token":..}` / `{"action":"save","name":..}` | recall / save |
+
+> Spotlight and IR are **not** available — those require the Tapo `pytapo`/cloud
+> API, which isn't set up on this fleet. If the TP-Link cloud account is ever
+> configured, they can be added back as a separate path.
 
 Responses are JSON. A `503 {"cooling_down":true}` means the lockout guard is
 deliberately holding off — wait it out, don't hammer.
@@ -110,7 +117,7 @@ to `cam-control` on the same host. Override host/ports for dev with URL params:
 
 ## Files
 
-- `cam_control.py` — lockout-safe control service (stdlib HTTP + `pytapo`).
+- `cam_control.py` — lockout-safe control service (stdlib HTTP + `onvif-zeep`).
 - `go2rtc.yaml` — RTSP→WebRTC relay config (creds via env, not in the file).
 - `deploy/install.sh` — venv + go2rtc + systemd units (enable, not start).
 - `credentials.env.example` — copy to `credentials.env` (gitignored) and fill in.

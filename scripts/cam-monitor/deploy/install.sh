@@ -46,12 +46,16 @@ if [[ ! -f "$DIR/credentials.env" ]]; then
   echo
 fi
 
-# --- Python venv with pytapo (control service dependency) ------------------
+# --- Python venv with onvif-zeep (control service dependency) --------------
+# Control is over ONVIF (the proven path on this fleet), not the Tapo cloud API.
 if [[ ! -x "$DIR/venv/bin/python" ]]; then
-  echo "creating venv + installing pytapo ..."
+  echo "creating venv + installing onvif-zeep ..."
   sudo -u "$RUN_USER" python3 -m venv "$DIR/venv"
   sudo -u "$RUN_USER" "$DIR/venv/bin/pip" install --quiet --upgrade pip
-  sudo -u "$RUN_USER" "$DIR/venv/bin/pip" install --quiet pytapo
+  sudo -u "$RUN_USER" "$DIR/venv/bin/pip" install --quiet onvif-zeep
+elif [[ ! -d "$(echo "$DIR"/venv/lib/python*/site-packages/onvif 2>/dev/null)" ]]; then
+  echo "venv present; ensuring onvif-zeep is installed ..."
+  sudo -u "$RUN_USER" "$DIR/venv/bin/pip" install --quiet onvif-zeep
 else
   echo "venv already present (skipping)"
 fi
