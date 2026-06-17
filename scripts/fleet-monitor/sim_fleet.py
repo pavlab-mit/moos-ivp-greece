@@ -80,8 +80,8 @@ class SimBoat:
         self.volt = rng.uniform(24.4, 25.2)
         self.int_t = rng.uniform(30, 38)
         self.int_kpa = rng.uniform(99.5, 101.0)
-        self.lat = 37.4360 + rng.uniform(-0.002, 0.002)   # Greece-ish
-        self.lon = 24.9460 + rng.uniform(-0.002, 0.002)
+        self.lat = 37.9332599 + rng.uniform(-0.0010, 0.0010)  # Hellenic Naval Academy, Piraeus
+        self.lon = 23.6282166 + rng.uniform(-0.0010, 0.0010)
         self.hdg = rng.uniform(0, 359)    # persistent heading (deg, 0=N, 90=E)
         self.spd = rng.uniform(1.0, 3.0)  # m/s
         # RF / mesh (Subsystem C) -- shore radio's view of this boat's radio
@@ -125,8 +125,8 @@ class SimBoat:
         _d = self.spd * dt
         self.lat += (_d * math.cos(math.radians(self.hdg))) / 111111.0
         self.lon += (_d * math.sin(math.radians(self.hdg))) / (111111.0 * math.cos(math.radians(self.lat)))
-        if abs(self.lat - 37.4360) > 0.0025 or abs(self.lon - 24.9460) > 0.0025:
-            self.hdg = math.degrees(math.atan2(24.9460 - self.lon, 37.4360 - self.lat)) % 360
+        if abs(self.lat - 37.9332599) > 0.0015 or abs(self.lon - 23.6282166) > 0.0015:
+            self.hdg = math.degrees(math.atan2(23.6282166 - self.lon, 37.9332599 - self.lat)) % 360
         # autonomy mode transitions
         if r() < 0.03:
             self.mode = self.rng.choice(MODES)
