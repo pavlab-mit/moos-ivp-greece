@@ -12,7 +12,7 @@ ProcessConfig = pMarineViewer
   set_pan_x            = -305
   set_pan_y            = -138
   zoom                 = 1.22
-  vehicles_shape_scale = 1.5
+  vehicles_shape_scale = 1.0
   vehicles_name_mode   = names
 
   circle_viewable_all = true
@@ -61,8 +61,8 @@ ProcessConfig = pMarineViewer
   button_10  = RAD-- # LOITER_UPDATE_ALL=mod_poly_rad=-5
 
   //--- Speed selection (updates goto + loiter) ---------------
-  button_11  = SPD_0.8 # WAYPOINT_UPDATE_ALL=speed=0.8 # LOITER_UPDATE_ALL=speed=0.8
-  button_12 = SPD_1.5 # WAYPOINT_UPDATE_ALL=speed=1.5 # LOITER_UPDATE_ALL=speed=1.5
+  button_11  = SPD_0.8 # WAYPOINT_UPDATE_ALL=speed=0.8 # LOITER_UPDATE_ALL=speed=0.8 # LAWNMOWER_UPDATE_ALL=speed=0.8
+  button_12 = SPD_1.5 # WAYPOINT_UPDATE_ALL=speed=1.5 # LOITER_UPDATE_ALL=speed=1.5 # LAWNMOWER_UPDATE_ALL=speed=1.5
 
   //--- Left-click sets the active behavior's point -----------
   left_context[update_all] = WAYPOINT_UPDATE_ALL = points=$[XPOS],$[YPOS]

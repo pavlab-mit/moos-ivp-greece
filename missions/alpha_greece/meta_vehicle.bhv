@@ -84,6 +84,7 @@ Behavior = BHV_Waypoint
   name      = bhv_lawnmower
   pwt       = 100
   condition = MODE == LAWNMOWER_MODE
+  updates   = LAWNMOWER_UPDATE
   runflag   = LAWNMOWER_MODE = true
   perpetual = true
 
