@@ -1,26 +1,25 @@
 
 1) OpRegions are created with geoview (moos-ivp)
 
-  $ geoview athens_hgoo_20.tif
+  $ geoview moos_georef_20260616_081356.tif
 
-Four regions were created:
+Four swimmer-generation regions were created inside the survey_athens op-region:
 
-OPA1="28.4,16.7:35.4,28.2:11,42.5:3.6,30.8"
-OPA2="28.4,16.7:38.4,33.4:27.6,52.2:-0.4,58:-12.3,40.1"
-OPA3="28.4,16.7:38.4,33.4:39,56:21.2,67.8:-7.8,67.9:-25.5,47.5"
-OPA4="28.4,16.7:38.4,33.4:42.8,61.5:29,89.1:-9,91.5:-34.9,52.8"
+OPA1="-138.0,-13.4:-89.3,-42.8:-68.3,-10.6:-90.4,-11.3"
+OPA2="-161.7,-9.9:-85.2,-56.1:-52.2,-5.5:-86.9,-6.6"
+OPA3="-185.4,-6.4:-81.1,-69.4:-36.1,-0.4:-83.4,-1.9"
+OPA4="-215.0,-2.0:-76.0,-86.0:-16.0,6.0:-79.0,4.0"
 
 
 2) Swim files are created with gen_swimmers (moos-ivp-2680)
 
-  $ gen_swimmers --poly="28.4,16.7:35.4,28.2:11,42.5:3.6,30.8"
-                 --sep=5 > athens_00.txt
+  $ gen_swimmers --poly="-138.0,-13.4:-89.3,-42.8:-68.3,-10.6:-90.4,-11.3"
+                 --sep=5 > athens_01.txt
 
   In fact, the build_swim_files.sh script builds a random laydown
   for five files:
 
-  athens_00.txt  (region 1, smallest)
-  athens_01.txt  (region 1)
+  athens_01.txt  (region 1, smallest)
   athens_02.txt  (region 2)
   athens_03.txt  (region 3)
   athens_04.txt  (region 4, largest)
@@ -37,7 +36,7 @@ OPA4="28.4,16.7:38.4,33.4:42.8,61.5:29,89.1:-9,91.5:-34.9,52.8"
   $ ./launch.sh 5 -r1
 
   This will launch the mission warp 5, single vehicle rescue
-  mission (r1), and swimfile athens_00.txt by default.
+  mission (r1), and swimfile athens_rand.txt by default.
 
   $ ./launch.sh 5 -r2 --rand
 

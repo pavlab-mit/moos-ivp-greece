@@ -13,9 +13,10 @@ MOOSTimeWarp = $(WARP)
 //LatOrigin  = 42.358436
 //LongOrigin = -71.087448 
 
-// Athens Naval Academy
-LatOrigin  = 37.9325
-LongOrigin = 23.6251
+// Hellenic Naval Academy, Athens (basin off the Academy)
+// Datum of moos_georef_20260616_081356 chart (Esri World Imagery)
+LatOrigin  = 37.9332599
+LongOrigin = 23.6282166
 	
 
 <tag><pHostInfo>

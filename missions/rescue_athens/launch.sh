@@ -80,7 +80,7 @@ for ARGI; do
 	echo "  --op1, -op1        Gen rand swimmers in op1  " 
 	echo "  --op2, -op2        Gen rand swimmers in op2  " 
 	echo "  --op3, -op3        Gen rand swimmers in op3  " 
-	echo "  --op3, -op4        Gen rand swimmers in op4  " 
+	echo "  --op4, -op4        Gen rand swimmers in op4  " 
 	echo "  --swimmers=<11>    Rand gen N reg swimmers   " 
 	echo "  --unreg=<0>        Rand gen N unreg swimmers " 
 	echo "                                               "
@@ -90,8 +90,6 @@ for ARGI; do
 	echo "  -2 :  Short for --swim_file=athens_02.txt    "
 	echo "  -3 :  Short for --swim_file=athens_03.txt    "
 	echo "  -4 :  Short for --swim_file=athens_04.txt    "
-	echo "  -5 :  Short for --swim_file=athens_05.txt    "
-	echo "  -6 :  Short for --swim_file=athens_06.txt    "
 	exit 0;
     elif [ "${ARGI//[^0-9]/}" = "$ARGI" -a "$TIME_WARP" = 1 ]; then 
         TIME_WARP=$ARGI
@@ -158,8 +156,6 @@ for ARGI; do
         SWIM_FILE=" ${ARGI}"
     elif [ "${ARGI}" = "-3" -o "${ARGI}" = "-4" ]; then
         SWIM_FILE=" ${ARGI}"
-    elif [ "${ARGI}" = "-5" -o "${ARGI}" = "-6" ]; then
-        SWIM_FILE=" ${ARGI}"
 
     elif [ "${ARGI:0:11}" = "--max_time=" ]; then
         MAX_TIME=" ${ARGI}"
@@ -198,7 +194,7 @@ VAMT=${#VROLES[@]}
 
 
 # If a newly random swim_file was created, but the name was
-# not specified, use the default name, "athens_00.txt"
+# not specified, use the default name, "athens_rand.txt"
 RAND_SWIM_FILE_MADE=""
 if [ "${RAND_SWIMMERS}" != "" -o "${SWIMMERS}" != "" ]; then
     RAND_SWIM_FILE_MADE="yes"
@@ -331,5 +327,3 @@ if [ "${XLAUNCHED}" != "yes" ]; then
 fi
 
 exit 0
-
-

@@ -23,11 +23,11 @@ GAME_FORMAT="r1"
 SWIMMERS=15
 UNREGERS=0
 SWIM_FILE="athens_rand.txt"
-OP1="28.4,16.7:35.4,28.2:11,42.5:3.6,30.8"
-OP2="28.4,16.7:38.4,33.4:27.6,52.2:-0.4,58:-12.3,40.1"
-OP3="28.4,16.7:38.4,33.4:39,56:21.2,67.8:-7.8,67.9:-25.5,47.5"
-OP4="28.4,16.7:38.4,33.4:39,56:21.2,67.8:-4.9,71.4:-25,47.7"
-SWIM_REGION=$OPA1
+OP1="-138.0,-13.4:-89.3,-42.8:-68.3,-10.6:-90.4,-11.3"
+OP2="-161.7,-9.9:-85.2,-56.1:-52.2,-5.5:-86.9,-6.6"
+OP3="-185.4,-6.4:-81.1,-69.4:-36.1,-0.4:-83.4,-1.9"
+OP4="-215.0,-2.0:-76.0,-86.0:-16.0,6.0:-79.0,4.0"
+SWIM_REGION=$OP4
 
 #------------------------------------------------------------
 #  Part 3: Check for and handle command-line arguments
@@ -44,7 +44,7 @@ for ARGI; do
 	echo "                                               "
 	echo "Options (custom):                              "
 	echo "  --rsl, -rsl        Rand swim locations       " 
-	echo "  --format<format>   Game format r1,r2,rs1,rs2 " 
+	echo "  --format=<format>  Game format r1,r2,rs1,rs2 " 
 	echo "                                               "
 	echo "  --op1              Gen rand swimmers in op1  " 
 	echo "  --op2              Gen rand swimmers in op2  " 
@@ -100,15 +100,27 @@ done
 #------------------------------------------------------------
 vecho "Setting starting position, speeds, vnames, colors"
 
-VPOS_CNT=`wc -l vpositions.txt | awk '{print $1}'`
+VPOS_CNT=0
+if [ -f "vpositions.txt" ]; then
+    VPOS_CNT=`wc -l vpositions.txt | awk '{print $1}'`
+fi
 echo "VPOS_CNT = $VPOS_CNT"
 echo "VEHICLE_AMT = $VEHICLE_AMT"
 if [ "${VPOS_CNT}" != "${VEHICLE_AMT}" ]; then
     rm -f vpositions.txt 
 fi
-if [ "${RAND_VPOS}" = "yes" -o  ! -f "vpositions.txt" ]; then
-    pickpos --poly="-19,37 : -16,42: 24,18 : 21,15" --buffer=10 \
-            --amt=$VEHICLE_AMT --hdg="12,47,0" > vpositions.txt
+# Always regenerate deterministic starts so launcher updates are not masked by
+# stale vpositions.txt from a prior same-vehicle-count run.
+if [ "${RAND_VPOS}" = "yes" ]; then
+    pickpos --poly="$SWIM_REGION" --buffer=5 \
+            --amt=$VEHICLE_AMT --hdg="0,359,0" > vpositions.txt
+else
+    {
+        echo "-40,-30"
+        echo "-44,-36"
+        echo "-48,-42"
+        echo "-51,-47.5"
+    } | head -n "$VEHICLE_AMT" > vpositions.txt
 fi
 
 # generate randomly placed swimmers

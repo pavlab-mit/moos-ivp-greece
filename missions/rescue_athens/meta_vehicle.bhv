@@ -66,7 +66,7 @@ Behavior = BHV_Waypoint
   capture_radius = 3.0 
     capture_line = true
      slip_radius = 8.0
-          points = 41,-25:64,-41:28,-60:50,-92:5,-100
+          points = -190,-8:-150,-32:-110,-58:-66,-34:-38,-2
 
 	crs_spd_zaic_ratio = 85
 	
@@ -97,14 +97,14 @@ Behavior = BHV_StationKeep
 //----------------------------------------------
 Behavior = BHV_AvoidObstacleV24
 {
-  name       = avdob_static
+  name       = avdob_buoy_1
   pwt        = 350
   condition  = AVOID = true
   condition  = MODE==ACTIVE
   condition  = MODE!=ACTIVE:STATION-KEEPING
   perpetual  = true
 
-  polygon    = pts={11,71.5:9.83,74.33:7,75.5:4.17,74.33:3,71.5:4.17,68.67:7,67.5:9.83,68.67}, label=static_obstacle
+  polygon    = pts={-31,-6:-32.17,-3.17:-35,-2:-37.83,-3.17:-39,-6:-37.83,-8.83:-35,-10:-32.17,-8.83}, label=buoy_1
 
   allowable_ttc     = 20
   pwt_outer_dist    = 10
@@ -113,7 +113,48 @@ Behavior = BHV_AvoidObstacleV24
   min_util_cpa_dist = 4
   max_util_cpa_dist = 8
   use_refinery      = true
-  holonomic_ok      = true
+}
+
+//----------------------------------------------
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_2
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  condition  = MODE!=ACTIVE:STATION-KEEPING
+  perpetual  = true
+
+  polygon    = pts={-58.5,-17.9:-59.67,-15.07:-62.5,-13.9:-65.33,-15.07:-66.5,-17.9:-65.33,-20.73:-62.5,-21.9:-59.67,-20.73}, label=buoy_2
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+}
+
+//----------------------------------------------
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_3
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  condition  = MODE!=ACTIVE:STATION-KEEPING
+  perpetual  = true
+
+  polygon    = pts={-91,-28:-92.17,-25.17:-95,-24:-97.83,-25.17:-99,-28:-97.83,-30.83:-95,-32:-92.17,-30.83}, label=buoy_3
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
 }
 
 //----------------------------------------------
@@ -165,21 +206,7 @@ Behavior = BHV_Waypoint
   capture_radius = 4.0
      slip_radius = 12.0
 
-#ifdef VNAME abe
-	point = 12,23
-#elseifdef VNAME ben
-	point = 19,19
-#elseifdef VNAME cal
-	point = 5,27
-#elseifdef VNAME deb
-	point = 0,30
-#elseifdef VNAME eve
-	point = 25,16
-#elseifdef VNAME fin
-	point = -4,33
-#else
 	point = $(START_POS)
-#endif
 
      visual_hints = vertex_size  = 4             // default
      visual_hints = vertex_color = dodger_blue   // default
@@ -192,7 +219,7 @@ Behavior = BHV_OpRegionV24
   pwt     = 300
   updates = RECOVER_UPDATES
 
-	core_poly = pts={60,10:-75.54,-54.26:-36.99,-135.58:98.55,-71.32}
+	core_poly = pts={-215,-2:-76,-86:-16,6:-79,4}
 
 	dynamic_region_var = RESCUE_REGION
 
@@ -206,4 +233,3 @@ Behavior = BHV_OpRegionV24
 
 	recover_spd = 0.6
 }
-

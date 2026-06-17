@@ -67,7 +67,6 @@ for ARGI; do
 	echo "  --swim_file=<athens_04.txt>                  " 
 	echo "    Set the swim file                          "
 	echo "                                               "
-	echo "  -0 :  Short for --swim_file=athens_01.txt       "
 	echo "  -1 :  Short for --swim_file=athens_01.txt       "
 	echo "  -2 :  Short for --swim_file=athens_02.txt       "
 	echo "  -3 :  Short for --swim_file=athens_03.txt       "
@@ -99,8 +98,6 @@ for ARGI; do
     elif [ "${ARGI:0:12}" = "--swim_file=" ]; then
         SWIM_FILE="${ARGI#--swim_file=*}"
 
-    elif [ "${ARGI}" = "-0" ]; then
-        SWIM_FILE="athens_00.txt"
     elif [ "${ARGI}" = "-1" ]; then
         SWIM_FILE="athens_01.txt"
     elif [ "${ARGI}" = "-2" ]; then

@@ -170,7 +170,8 @@ ProcessConfig = uFldShoreBroker
   qbridge = DEPLOY, NODE_REPORT, NODE_MESSAGE, SURVEY
   qbridge = STATION_KEEP, APPCAST_REQ, SWIMMER_ALERT
   qbridge = MOOS_MANUAL_OVERIDE, MOOS_MANUAL_OVERRIDE
-  qbridge = SURVEY_UPDATE, SCOUTED_SWIMMER, CONTACT_INFO
+  qbridge = SURVEY_UPDATE, SCOUT_UPDATE, SCOUTED_SWIMMER
+  qbridge = CONTACT_INFO
   qbridge = NODE_COLOR_CHANGE, PID_THRUST_CAP
   
   bridge  = src=AVOID
@@ -244,14 +245,12 @@ ProcessConfig = pMarineViewer
 
 	extrap_policy = decay=off
 	
-  //tiff_file            = forrest19.tif
-  tiff_file            = athens_hgoo_20.tif
-  tiff_file            = athens_thgoo_20.tif
-  //tiff_file            = athens_carto_db_20.tif
-  set_pan_x            = -634
-  set_pan_y            = -240
+  // Hellenic Naval Academy basin (Esri World Imagery, 2026-06-16 datum).
+  tiff_file            = moos_georef_20260616_081356.tif
+  set_pan_x            = -305
+  set_pan_y            = -138
   zoom                 = 1.22
-  vehicles_shape_scale = 1.0
+  vehicles_shape_scale = 1.5
   vehicles_name_mode   = names+shortmode
 
 	procs_font_size = medium
@@ -310,18 +309,11 @@ ProcessConfig = pMarineViewer
   button_three = STATION  # STATION_KEEP_ALL=true # SURVEY_ALL=false
   button_four = ALLSTOP  # DEPLOY_ALL=false
 
-  button_5 = VANTAGE1  # PMV_CENTER=zoom=1.8,x=46,y=-280
-  button_6 = VANTAGE2  # PMV_CENTER=zoom=2.6,x=17,y=-350
+  //button_5 = VANTAGE1  # PMV_CENTER=zoom=1.25,x=-105,y=-30
+  //button_6 = VANTAGE2  # PMV_CENTER=zoom=3.0,x=-58,y=-32
 
-	//button_7 = Buff1 # CONTACT_INFO_ALL=min_util_cpa_dist=4
-	//button_7 = Buff1 # CONTACT_INFO_ALL=max_util_cpa_dist=10
-
-	//button_8 = Buff2 # CONTACT_INFO_ALL=min_util_cpa_dist=8
-	//button_8 = Buff2 # CONTACT_INFO_ALL=max_util_cpa_dist=14
-
-	//button_9 = TCAP100  # PID_THRUST_CAP_ALL=100
-	//button_10 = TCAP50  # PID_THRUST_CAP_ALL=50
+  button_5 = SPD_0.8 # SURVEY_UPDATE_ALL=speed=0.8 # SCOUT_UPDATE_ALL=desired_speed=0.8
+  button_6 = SPD_1.5 # SURVEY_UPDATE_ALL=speed=1.5 # SCOUT_UPDATE_ALL=desired_speed=1.5
 	
 
 	}
-
