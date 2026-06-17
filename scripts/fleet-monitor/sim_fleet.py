@@ -99,7 +99,7 @@ class SimBoat:
     def step(self, dt):
         r = self.rng.random
         # connectivity random walk
-        if self.link_up and r() < 0.01:
+        if self.link_up and r() < 0.004:
             self.link_up = False
         elif not self.link_up and r() < 0.20:        # recover faster than drop
             self.link_up = True
@@ -135,7 +135,7 @@ class SimBoat:
             self.tele_age = 8.0       # force a stale window
         else:
             self.tele_age = self.tele_age + dt if self.tele_age > dt else 0.0
-        if r() < 0.008:
+        if r() < 0.002:
             self.tele_on = not self.tele_on
         # RF random walk; MCS / TQ / loss all track signal strength (q: 0..1).
         self.rssi = max(-92.0, min(-40.0, self.rssi + self.rng.uniform(-2.5, 2.5)))
@@ -491,7 +491,7 @@ def main():
     try:
         while True:
             if not args.static:
-                if rng.random() < 0.002:           # rare shore-radio blip
+                if rng.random() < 0.0006:          # rare shore-radio blip
                     shore_ok = not shore_ok
                 elif not shore_ok and rng.random() < 0.5:
                     shore_ok = True
