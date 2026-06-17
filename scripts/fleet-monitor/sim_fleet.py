@@ -28,6 +28,7 @@ sends, and the snapshot schema mirrors collect.py exactly (verified in tests).
 import argparse
 import json
 import os
+import math
 import random
 import socket
 import sys
@@ -81,6 +82,8 @@ class SimBoat:
         self.int_kpa = rng.uniform(99.5, 101.0)
         self.lat = 37.4360 + rng.uniform(-0.002, 0.002)   # Greece-ish
         self.lon = 24.9460 + rng.uniform(-0.002, 0.002)
+        self.hdg = rng.uniform(0, 359)    # persistent heading (deg, 0=N, 90=E)
+        self.spd = rng.uniform(1.0, 3.0)  # m/s
         # RF / mesh (Subsystem C) -- shore radio's view of this boat's radio
         self.mac = None               # filled by main(): real map or synthesized
         self.rssi = rng.uniform(-58, -47)
@@ -115,6 +118,15 @@ class SimBoat:
         # enclosure wander
         self.int_t = min(60, max(25, self.int_t + self.rng.uniform(-0.4, 0.5)))
         self.int_kpa += self.rng.uniform(-0.05, 0.05)
+        # position: wander the heading and advance along it so the map shows
+        # real moving tracks; gently turn back toward the op-area center.
+        self.hdg = (self.hdg + self.rng.uniform(-12, 12)) % 360
+        self.spd = max(0.3, min(3.0, self.spd + self.rng.uniform(-0.25, 0.25)))
+        _d = self.spd * dt
+        self.lat += (_d * math.cos(math.radians(self.hdg))) / 111111.0
+        self.lon += (_d * math.sin(math.radians(self.hdg))) / (111111.0 * math.cos(math.radians(self.lat)))
+        if abs(self.lat - 37.4360) > 0.0025 or abs(self.lon - 24.9460) > 0.0025:
+            self.hdg = math.degrees(math.atan2(24.9460 - self.lon, 37.4360 - self.lat)) % 360
         # autonomy mode transitions
         if r() < 0.03:
             self.mode = self.rng.choice(MODES)
@@ -198,7 +210,7 @@ class SimBoat:
             "fix=RTK_FIX", f"sats={int(self.rng.uniform(18,28))}",
             f"hdop={self.rng.uniform(0.6,1.2):.2f}",
             f"lat={self.lat:.7f}", f"lon={self.lon:.7f}",
-            f"spd={self.rng.uniform(0,2.2):.2f}", f"hdg={self.rng.uniform(0,359):.1f}",
+            f"spd={self.spd:.2f}", f"hdg={self.hdg:.1f}",
             "stale=none",
         ]
         return ",".join(f)
