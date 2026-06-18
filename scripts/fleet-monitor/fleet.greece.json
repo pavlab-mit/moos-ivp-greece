@@ -1,5 +1,5 @@
 {
-  "_comment": "Fleet registry for the shoreside connectivity collector (Subsystem A). Addressing is deterministic from BOAT_ID per documentation/01_fleet_and_network_reference.md (§4): shore uplink = 10.1.0.<id>, eth0 gw = 10.<id>.1.1, backseat = 10.<id>.1.100. Only list active boats and toggle 'active'; every IP is derived by formula, so this is the single source of truth and cannot drift from the address plan.",
+  "_comment": "Fleet registry for the shoreside connectivity collector (Subsystem A). Addressing is deterministic from BOAT_ID per documentation/01_fleet_and_network_reference.md (\u00a74): shore uplink = 10.1.0.<id>, eth0 gw = 10.<id>.1.1, backseat = 10.<id>.1.100. Only list active boats and toggle 'active'; every IP is derived by formula, so this is the single source of truth and cannot drift from the address plan.",
   "_comment_overrides": "Escape hatch for a boat that doesn't fit the address plan (static lease, different subnet, a frontseat/backseat reached over some other path): pin any rung directly with an 'uplink', 'frontseat', and/or 'backseat' IP string. An explicit rung always wins over the BOAT_ID formula, so you can mix them (keep 'id', override just the backseat) or drop 'id' entirely and pin every rung. See the inactive 'odd' example below.",
   "site": "Greece",
   "shore_radio_ip": "10.1.0.3",
@@ -23,7 +23,7 @@
       "asha": "",
       "bama": "",
       "chip": "",
-      "dale": "",
+      "dale": "00:30:1a:3e:79:1d",
       "ewan": "",
       "flex": ""
     }
