@@ -197,6 +197,7 @@ class Collector:
             b["rung_ips"] = resolve_rungs(b)
         self._hist = {}  # ip -> TargetHistory
         self._last_present = {}  # boat name -> ts
+        self._last_heard = {}    # boat name -> ts (network/telemetry/radio)
 
         # --- Subsystem B: telemetry receiver (pBB_Status UDP push) ---
         self.telemetry_port = int(cfg.get("telemetry_port", 9300))
@@ -723,6 +724,13 @@ class Collector:
                 fault = None
                 self._last_present[name] = now
 
+            tele = self._telemetry_for(name, now)             # Subsystem B, or None
+            radio_rec = radio_by_boat.get(name)               # Subsystem C, or None
+            # "heard" = on the network (uplink up), OR sending telemetry, OR its
+            # radio is heard by the shore radio. The dashboard uses last_heard_ts
+            # to drop boats that have been silent too long (ghosts).
+            if up or (tele and tele.get("fresh")) or radio_rec is not None:
+                self._last_heard[name] = now
             boats_out.append({
                 "name": name,
                 "id": b.get("id"),
@@ -731,8 +739,10 @@ class Collector:
                 "rungs": rungs,
                 "last_present_ts": self._last_present.get(name),
                 "last_present_iso": _iso(self._last_present.get(name)),
-                "telemetry": self._telemetry_for(name, now),  # Subsystem B, or None
-                "radio": radio_by_boat.get(name),             # Subsystem C, or None
+                "last_heard_ts": self._last_heard.get(name),
+                "last_heard_iso": _iso(self._last_heard.get(name)),
+                "telemetry": tele,
+                "radio": radio_rec,
             })
 
         return {
