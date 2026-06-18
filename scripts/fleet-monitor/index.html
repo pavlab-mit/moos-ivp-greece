@@ -289,6 +289,15 @@
 const params = new URLSearchParams(location.search);
 const SRC  = params.get("src")  || "fleet_status.json";
 const POLL = (parseFloat(params.get("poll")) || 2) * 1000;
+// Hide a boat not heard (network / telemetry / radio) in this many seconds --
+// declutters "ghosts" from boats long gone. Override with ?hide=<seconds>.
+const HIDE_AFTER_S = parseFloat(params.get("hide")) || 300;
+function isGhost(b, nowTs) {
+  const t = b.last_heard_ts;
+  if (t === undefined) return false;   // older collector / other source -> show
+  if (t === null) return true;         // never heard -> ghost
+  return (nowTs - t) > HIDE_AFTER_S;   // silent past the threshold -> ghost
+}
 
 // Camera tab config (defined early so applyView()->camOnView() is safe on load).
 // Video = go2rtc WebRTC; control = the lockout-safe cam-control service. Both on
@@ -465,7 +474,7 @@ function renderRadio(snap) {
       </div>
     </div>`;
 
-  const boats = snap.boats || [];
+  const boats = (snap.boats || []).filter(b => !isGhost(b, snap.ts || Date.now() / 1000));
   const rows = boats.map(b => {
     const r2 = b.radio;
     if (!r2) {
@@ -516,14 +525,18 @@ function render(snap) {
   document.title = site ? `Fleet Monitor — ${site}` : "Fleet Monitor";
 
   // summary bar (Fleet/A+B only — radio-subsystem health lives on the Radio tab)
-  const boats = snap.boats || [];
+  const _now = snap.ts || Date.now() / 1000;
+  const allBoats = snap.boats || [];
+  const boats = allBoats.filter(b => !isGhost(b, _now));   // drop ghosts
+  const hidden = allBoats.length - boats.length;
   const present = boats.filter(b => b.state === "present").length;
   const shore = snap.shore_ok ? `<b style="color:var(--green)">up</b>`
                               : `<b style="color:var(--red)">DOWN</b>`;
   document.getElementById("summary").innerHTML =
     `<span class="stat"><b>${present}</b>/${boats.length} present</span>` +
     `<span class="stat"><b>${snap.telemetry_count||0}</b> telemetry fresh</span>` +
-    `<span class="stat">shore radio ${shore}</span>`;
+    `<span class="stat">shore radio ${shore}</span>` +
+    (hidden ? `<span class="stat" style="color:var(--muted)">${hidden} hidden</span>` : "");
 
   // grid
   document.getElementById("grid").innerHTML = boats.map(card).join("");
