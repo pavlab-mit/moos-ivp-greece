@@ -1,0 +1,22 @@
+// MOOS-IvP Configuration for moos_georef_20260616_081356.tif
+// Generated on 2026-06-16 08:14:07
+
+// Origin (center of local coordinate system)
+LatOrigin  = 37.933250
+LongOrigin = 23.628175
+
+// Bounding Box
+// North: 37.934306
+// South: 37.931607
+// East: 23.628545
+// West: 23.623588
+
+// Map Configuration
+tiff_file = moos_georef_20260616_081356.tif
+// tiff_file_b = moos_georef_20260616_081356.tif  // Optional: for pMarineViewer background
+
+// Image Info
+// Zoom Level: 19
+// Image Size: 2048x1536 pixels
+// Tiles: 48 (8x6)
+// Source: Esri World Imagery

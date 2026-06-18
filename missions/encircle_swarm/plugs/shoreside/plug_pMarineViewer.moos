@@ -1,0 +1,66 @@
+//--------------------------------------------------------
+ProcessConfig = pMarineViewer
+{
+  AppTick    = 4
+  CommsTick  = 4
+
+  // Hellenic Naval Academy basin (Esri World Imagery, 2026-06-16 datum).
+  tiff_file            = moos_georef_20260616_081356.tif
+
+  // Pan/zoom are an estimate translated from the prior chart; fine-tune
+  // in the viewer to frame the operating area (~ -250,-10).
+  set_pan_x            = -305
+  set_pan_y            = -138
+  zoom                 = 1.22
+  vehicles_shape_scale = 1.0
+  vehicles_name_mode   = names
+
+  circle_viewable_all = true
+  polygon_viewable_all = true
+  polygon_viewable_labels = false
+
+  beat_flag = HEARTBEAT=true
+
+  appcast_viewable = true
+  appcast_color_scheme = indigo
+
+  scope  = DEPLOY_ALL
+  scope  = AUTONOMY_MODE
+  scope  = MISSION_TASK_ALL
+  scope  = TASK_MGR_STAT
+
+  action = STATION_KEEP_ALL = false
+  action = STATION_KEEP_ALL = true
+  action = ENCIRCLE_ACTIVE_ALL = true
+  action = ENCIRCLE_ACTIVE_ALL = false
+
+  //--- Main mode buttons -------------------------------------
+  // DEPLOY sends every (deployed) vehicle straight into the encircle,
+  // so each one seamlessly joins the ring as it comes online.
+  button_one   = DEPLOY  # DEPLOY_ALL=true # MOOS_MANUAL_OVERRIDE_ALL=false
+  button_one   = AUTONOMY_MODE_ALL=ENCIRCLE # ENCIRCLE_ACTIVE_ALL=true
+  button_one   = RETURN_ALL=false # STATION_KEEP_ALL=false
+
+  button_two   = ENCIRCLE # AUTONOMY_MODE_ALL=ENCIRCLE # DEPLOY_ALL=true # ENCIRCLE_ACTIVE_ALL=true
+  button_two   = MOOS_MANUAL_OVERRIDE_ALL=false # RETURN_ALL=false # STATION_KEEP_ALL=false
+
+  button_three = STATION # STATION_KEEP_ALL=true # RETURN_ALL=false
+  button_four  = RETURN  # RETURN_ALL=true # STATION_KEEP_ALL=false
+  button_five  = ALLSTOP # DEPLOY_ALL=false
+
+  //--- Log marker: inert, bridged to vehicles, just stamps the logs
+  button_7  = TIMESTAMP # TIMESTAMP_FLAG_ALL=mark
+
+  //--- Encircle radius controls ------------------------------
+  button_8 = RAD++ # LOITER_UPDATE_ALL=mod_poly_rad=5
+  button_9 = RAD-- # LOITER_UPDATE_ALL=mod_poly_rad=-5
+
+  //--- Encircle group speed ----------------------------------
+  button_10 = SPD_1.0 # ENCIRCLE_GRP_SPEED_ALL=1.0
+  button_11 = SPD_1.8 # ENCIRCLE_GRP_SPEED_ALL=1.8
+
+  //--- Left-click posts a GOTO TASK: all vehicles bid, the closest wins
+  //    and transits to the point, then rejoins the ring. id==hash keys on
+  //    the click counter ($[IX]) so each click is a distinct task.
+  left_context[task] = MISSION_TASK_ALL = type=waypoint,id=task_$[IX],hash=task_$[IX],waypt_x=$[XPOS],waypt_y=$[YPOS]
+}

@@ -1,0 +1,290 @@
+//*******************************************************
+// Vehicle behavior configuration file
+//   Mission: encircle_swarm (Hellenic Naval Academy basin)
+//   Modes:   ENCIRCLE / GOTO / STATION / RETURN
+//   Idea:    All vehicles encircle ONE common circle. pEncircle adjusts
+//            each vehicle's loiter speed (LOITER_UPDATE) so the group
+//            spaces itself evenly -- so as each vehicle is deployed it
+//            seamlessly slots into the ring and everyone re-spaces.
+//   Safety:  static-obstacle avoidance, COLREGS, op-region
+//*******************************************************
+
+initialize   DEPLOY = false
+initialize   RETURN = false
+initialize   STATION_KEEP = false      // DEPLOY -> go straight to encircle
+initialize   AUTONOMY_MODE = ENCIRCLE
+initialize   AVOID = true
+initialize   ON_TASK = false           // true on the goto-auction winner
+
+set MODE = ACTIVE {
+  DEPLOY = true
+} INACTIVE
+
+set MODE = STATION_MODE {
+  MODE = ACTIVE
+  STATION_KEEP = true
+  RETURN = false
+}
+
+set MODE = RETURN_MODE {
+  MODE = ACTIVE
+  RETURN = true
+  STATION_KEEP = false
+}
+
+set MODE = ENCIRCLE_MODE {
+  MODE = ACTIVE
+  AUTONOMY_MODE = ENCIRCLE
+  RETURN = false
+  STATION_KEEP = false
+}
+
+//----------------------------------------------
+// Encircle Mode - all vehicles loiter the SAME circle; pEncircle drives
+//   speed (LOITER_UPDATE=speed_alt) to space the ring evenly. A newly
+//   deployed vehicle acquires the circle and the group re-spaces around
+//   it automatically. RAD++/RAD-- adjust the radius.
+//----------------------------------------------
+Behavior = BHV_Loiter
+{
+  name      = bhv_encircle
+  pwt       = 100
+  condition = MODE == ENCIRCLE_MODE
+  condition = ON_TASK = false
+  updates   = LOITER_UPDATE
+  perpetual = true
+
+  acquire_dist = 3
+  capture_radius = 5
+  center_activate = false
+  clockwise = false
+  slip_radius = 15
+  speed = $(SPEED)
+  spiral_factor = 99
+
+  polygon = radial::x=$(CIRCLE_X),y=$(CIRCLE_Y),radius=$(CIRCLE_RAD),pts=18
+
+  visual_hints = vertex_size  = 1
+  visual_hints = edge_size    = 1
+  visual_hints = vertex_color = dodger_blue
+  visual_hints = edge_color   = white
+  visual_hints = nextpt_color = yellow
+  visual_hints = nextpt_lcolor = aqua
+  visual_hints = nextpt_vertex_size = 5
+}
+
+//----------------------------------------------
+// Goto auction - spawned per MISSION_TASK alert (TASK_WAYPOINT) from a
+//   left-click. All vehicles bid distance to the point; the closest
+//   wins (max_bid_wins=false), sets ON_TASK=true, and the point is
+//   handed to bhv_taskgoto below. The rest keep encircling.
+//----------------------------------------------
+Behavior = BHV_TaskWaypoint
+{
+  name        = task_wpt_
+  type        = waypoint        // -> TM_ALERT_REQUEST type; pTaskManager
+                                //    maps MISSION_TASK type=waypoint to
+                                //    this behavior's spawn alert (var below)
+  templating  = spawn
+  updates     = TASK_WAYPOINT
+  condition   = MODE == ACTIVE
+  perpetual   = true
+
+  max_bid_wins  = false
+  team_range    = 800
+  team_by_group = false
+
+  bidwonflag  = ON_TASK = true
+  bidwonflag  = TASKGOTO_UPDATE = points=$[PTX],$[PTY]
+}
+
+//----------------------------------------------
+// Goto transit - only the auction winner (ON_TASK=true) runs this; it
+//   drives to the point set by bidwonflag, then on arrival clears
+//   ON_TASK so it rejoins the encircle (single ring re-acquires).
+//----------------------------------------------
+Behavior = BHV_Waypoint
+{
+  name       = bhv_taskgoto
+  pwt        = 100
+  condition  = MODE == ACTIVE
+  condition  = ON_TASK = true
+  updates    = TASKGOTO_UPDATE
+  perpetual  = true
+  endflag    = ON_TASK = false
+
+  speed       = 2.0
+  radius      = 4.0
+  slip_radius = 10.0
+  points      = $(CIRCLE_X),$(CIRCLE_Y)   // placeholder; set by bidwonflag
+
+  lead        = 8
+  lead_damper = 1
+  order       = normal
+
+  visual_hints = nextpt_color=green, nextpt_lcolor=green
+  visual_hints = vertex_color=green, edge_color=green
+  visual_hints = vertex_size=5, edge_size=2
+}
+
+//----------------------------------------------
+// Station Keep Mode - holds where activated
+//----------------------------------------------
+Behavior = BHV_StationKeep
+{
+  name      = bhv_station
+  pwt       = 100
+  condition = MODE == STATION_MODE
+  updates   = STATION_UPDATE
+  runflag   = STATION_MODE = true
+  perpetual = true
+
+  center_activate = true
+  inner_radius = 5
+  outer_radius = 10
+  outer_speed  = 1.0
+  transit_speed = 2.0
+
+  station_pt = $(START_POS)
+  swing_time = 10
+
+  visual_hints = vertex_color=white, edge_color=gray25
+  visual_hints = vertex_size=4, edge_size=1
+}
+
+//----------------------------------------------
+// Return Mode - back to the vehicle return position
+//----------------------------------------------
+Behavior = BHV_Waypoint
+{
+  name       = bhv_return
+  pwt        = 100
+  condition  = MODE == RETURN_MODE
+  perpetual  = true
+  updates    = RETURN_UPDATE
+  endflag    = RETURN = false
+  endflag    = STATION_KEEP = true
+
+  speed = 2.0
+  capture_radius = 2.0
+  slip_radius = 8.0
+  points = $(RETURN_POS)
+
+  visual_hints = nextpt_color=red, nextpt_lcolor=red
+  visual_hints = vertex_color=red, edge_color=red
+  visual_hints = vertex_size=5, edge_size=2
+}
+
+//----------------------------------------------
+// Static obstacle avoidance (Hellenic Naval Academy basin)
+//----------------------------------------------
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_1
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-31,-6:-32.17,-3.17:-35,-2:-37.83,-3.17:-39,-6:-37.83,-8.83:-35,-10:-32.17,-8.83}, label=buoy_1
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_2
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-58.5,-17.9:-59.67,-15.07:-62.5,-13.9:-65.33,-15.07:-66.5,-17.9:-65.33,-20.73:-62.5,-21.9:-59.67,-20.73}, label=buoy_2
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_3
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-91,-28:-92.17,-25.17:-95,-24:-97.83,-25.17:-99,-28:-97.83,-30.83:-95,-32:-92.17,-30.83}, label=buoy_3
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+//----------------------------------------------
+// Dynamic contact avoidance (COLREGS) - spawns per contact
+//----------------------------------------------
+Behavior = BHV_AvdColregsV22
+{
+  name       = avdcol_
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE == ACTIVE
+  updates    = CONTACT_INFO
+  endflag    = CONTACT_RESOLVED = $[CONTACT]
+  templating = spawn
+
+  contact            = to-be-set
+  on_no_contact_ok   = true
+  extrapolate        = true
+  decay              = 30,60
+
+  headon_only        = true
+  use_refinery       = true
+
+  pwt_outer_dist     = 15
+  pwt_inner_dist     = 7
+  completed_dist     = 30
+  min_util_cpa_dist  = 4
+  max_util_cpa_dist  = 8
+  pwt_grade          = linear
+}
+
+//----------------------------------------------
+// Op-region containment (covers launch line + the circle)
+//----------------------------------------------
+Behavior = BHV_OpRegionV24
+{
+  name    = opreg
+  pwt     = 300
+  updates = RECOVER_UPDATES
+
+  core_poly = pts={-215,-2:-76,-86:-16,6:-79,4}
+
+  dynamic_region_var = RESCUE_REGION
+
+  visual_hints = edge_size = 1
+  visual_hints = save_edge_color = gray30
+  visual_hints = halt_edge_color = gray40
+
+  save_dist = 1
+  halt_dist = 4.5
+  recover_spd = 0.6
+}

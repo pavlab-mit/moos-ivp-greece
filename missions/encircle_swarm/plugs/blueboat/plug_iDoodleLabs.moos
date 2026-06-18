@@ -1,0 +1,41 @@
+//------------------------------------------------
+// iDoodleLabs config block
+// 
+// This app monitors Doodle Labs radio link quality between vehicles
+// and publishes MOOS variables with signal strength and mesh metrics
+
+ProcessConfig = iDoodleLabs
+{
+   AppTick   = 4
+   CommsTick = 4
+
+   // Radio connection settings
+   RADIO_IP  = 192.168.31.10        // IP address of local Doodle radio
+   USERNAME  = user                // Radio login username
+   PASSWORD  = DoodleSmartRadio    // Radio login password
+   
+   // Polling configuration  
+   POLL_INTERVAL = 1.0             // Seconds between radio queries (default 1.0)
+   disconnect_timeout = 5
+   
+   // Peer monitoring configuration
+   // Format: vehicle_name:MAC_address (comma separated list)
+   MONITOR_PEERS = shoreside:00:30:1a:3a:b3:1d //wearable:00:30:1a:3b:47:bb
+   
+   // Debug logging
+   DEBUG = false                   // Enable debug file logging
+}
+
+// Published variables:
+// DOODLE_RADIO_CONNECTED       - 1 if connected to local radio, 0 otherwise
+// DOODLE_NOISE_FLOOR          - Local radio noise floor in dBm
+// DOODLE_NUM_PEERS            - Number of monitored peers currently connected
+//
+// Per monitored peer (where <VEHICLE> is the vehicle name):
+// DOODLE_<VEHICLE>_RSSI       - Average RSSI across antennas (dBm)
+// DOODLE_<VEHICLE>_RSSI_ANT0  - Antenna 0 RSSI (dBm)
+// DOODLE_<VEHICLE>_RSSI_ANT1  - Antenna 1 RSSI (dBm)  
+// DOODLE_<VEHICLE>_SNR        - Signal-to-noise ratio (dB)
+// DOODLE_<VEHICLE>_CONNECTED  - 1 if peer is connected, 0 otherwise
+// DOODLE_<VEHICLE>_TQ         - Transmit quality (0-255, mesh metric)
+// DOODLE_<VEHICLE>_HOP_COUNT  - Number of hops to reach peer

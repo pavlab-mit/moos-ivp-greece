@@ -1,0 +1,48 @@
+//*******************************************************
+// ShoreSide Configuration File
+
+ServerHost = localhost
+ServerPort = 9000
+Community  = shoreside
+
+#include plugs/shared/plug_origin_warp.moos
+  
+//--------------------------------------------------------
+Processconfig = ANTLER
+{
+  MSBetweenLaunches = 100
+
+  Run = MOOSDB            @ NewConsole = false
+	Run = pMarineViewer     @ NewConsole = false
+  Run = pLogger           @ NewConsole = false
+  Run = uXMS              @ NewConsole = false
+  Run = uProcessWatch     @ NewConsole = false
+  Run = pShare            @ NewConsole = false
+  Run = pHostInfo         @ NewConsole = false
+  Run = uFldShoreBroker   @ NewConsole = false
+  Run = uFldNodeComms     @ NewConsole = false
+  Run = pRealm            @ NewConsole = false
+  Run = uFldDelve         @ NewConsole = false
+  Run = iDoodleLabs       @ NewConsole = false
+  Run = uTimerScript      @ NewConsole = false
+  Run = uFldTaskMonitor   @ NewConsole = false
+}
+
+#include plugs/shared/plug_pShare.moos
+#include plugs/shared/plug_pHostInfo.moos
+#include plugs/shared/plug_uProcessWatch.moos
+
+#include plugs/shoreside/plug_uFldDelve.moos
+#include plugs/shoreside/plug_pRealm.moos
+
+#include plugs/shoreside/plug_uFldShoreBroker.moos
+#include plugs/shoreside/plug_uFldNodeComms.moos
+#include plugs/shoreside/plug_uFldCollisionDetect.moos
+#include plugs/shoreside/plug_iDoodleLabs.moos
+
+#include plugs/shared/plug_pHostInfo.moos
+#include plugs/shoreside/plug_uXMS.moos
+#include plugs/shoreside/plug_pLogger.moos
+#include plugs/shoreside/plug_uTimerScript.moos
+#include plugs/shoreside/plug_uFldTaskMonitor.moos
+#include plugs/shoreside/plug_pMarineViewer.moos

@@ -1,0 +1,13 @@
+//--------------------------------------------------------
+// uTimerScript (shoreside) - draw the common encircle circle so the
+// operating picture shows the ring even before any vehicle is on it.
+ProcessConfig = uTimerScript
+{
+  AppTick    = 4
+  CommsTick  = 4
+  reset_max  = unlimited
+  reset_time = 30      // re-post every 30s so a late viewer still sees it
+
+  event = var=VIEW_CIRCLE, val="x=-86,y=-33,radius=20,label=encircle,edge_color=white,vertex_color=dodger_blue,fill_color=dodger_blue,fill_transparency=0.1,edge_size=2", time=1
+  event = var=VIEW_POINT,  val="x=-86,y=-33,label=encircle_ctr,vertex_color=dodger_blue,vertex_size=6", time=1
+}

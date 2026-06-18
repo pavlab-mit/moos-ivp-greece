@@ -1,0 +1,12 @@
+//--------------------------------------------------------
+// uFldTaskMonitor (moos-ivp-swarm)
+//   Shoreside appcast view of the goto auction: snoops TASK_MGR_STAT
+//   and the inter-vehicle TASK_BID traffic to show who is bidding/
+//   winning each MISSION_TASK. Monitoring only.
+ProcessConfig = uFldTaskMonitor
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  report_discrepancies = false
+}
