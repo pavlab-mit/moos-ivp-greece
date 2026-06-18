@@ -31,6 +31,7 @@ Endpoints (JSON in/out, permissive CORS for the trusted LAN):
     POST /cam/ptz   {"pan":-1|0|1,"tilt":-1|0|1,"size":1|2|3}
     GET  /cam/presets                       -> [{"token":..,"name":..}, ...]
     POST /cam/preset {"action":"goto","token":..} | {"action":"save","name":..}
+                     | {"action":"delete","token":..}
 
 Run (with the venv that has onvif-zeep):
     ./venv/bin/python cam_control.py --cam-ip 10.1.0.15 --onvif-port 2020 --port 8082
@@ -211,6 +212,10 @@ class CamSession:
         self.call(lambda ptz, token: ptz.SetPreset(
             {"ProfileToken": token, "PresetName": name}))
 
+    def remove_preset(self, tk):
+        self.call(lambda ptz, token: ptz.RemovePreset(
+            {"ProfileToken": token, "PresetToken": tk}))
+
     def status(self):
         now = time.time()
         cooling = now < self._cooldown_until
@@ -310,7 +315,11 @@ class Handler(BaseHTTPRequestHandler):
             name = str(b.get("name", "")).strip() or "preset"
             self.session.save_preset(name)
             return {"saved": name}
-        raise ValueError("action must be goto|save")
+        if action == "delete":
+            tk = str(b.get("token"))
+            self.session.remove_preset(tk)
+            return {"deleted": tk}
+        raise ValueError("action must be goto|save|delete")
 
 
 def main():

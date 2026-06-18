@@ -272,6 +272,7 @@
             <select id="preset-sel"><option value="">—</option></select>
             <button class="seg" id="preset-go">Go</button>
             <button class="seg" id="preset-save">Save…</button>
+            <button class="seg" id="preset-del">Delete</button>
           </div>
           <div class="cam-row" style="margin-top:8px"><button class="seg" id="cam-reload">⟳ reload video</button></div>
         </div>
@@ -682,6 +683,16 @@ function initCamera() {
     const name = prompt("Save current position as preset named:");
     if (name) camCtrl("/cam/preset", "POST", { action: "save", name })
       .then(() => { camNote("saved preset “" + name + "”"); camLoadPresets(); })
+      .catch(e => camNote(e.message, true));
+  };
+  document.getElementById("preset-del").onclick = () => {
+    const sel = document.getElementById("preset-sel");
+    const token = sel.value;
+    const label = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : token;
+    if (!token) return camNote("pick a preset to delete first");
+    if (!confirm(`Delete preset “${label}”?`)) return;
+    camCtrl("/cam/preset", "POST", { action: "delete", token })
+      .then(() => { camNote("deleted preset"); camLoadPresets(); })
       .catch(e => camNote(e.message, true));
   };
   document.getElementById("cam-reload").onclick = () => {
