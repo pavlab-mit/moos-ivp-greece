@@ -1,0 +1,10 @@
+//---------------------------------------------------------
+// uFldDelve Config Block
+
+ProcessConfig = uFldDelve
+{
+  AppTick    = 2
+  CommsTick  = 2
+
+	rate_frame = 15
+}

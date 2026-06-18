@@ -1,0 +1,17 @@
+//--------------------------------------------------------
+// pTaskManager (moos-ivp-swarm)
+//   Receives MISSION_TASK (a clicked goto point, bridged from the
+//   shoreside) and, on the alert var the BHV_TaskWaypoint template
+//   requests (TASK_WAYPOINT), spawns a task-waypoint behavior so this
+//   vehicle joins the auction. Lowest distance bid wins (see the .bhv).
+ProcessConfig = pTaskManager
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  task_utc_mandatory  = false
+  task_hash_mandatory = false
+
+  max_active_task_memory    = 15
+  max_completed_task_memory = 8
+}

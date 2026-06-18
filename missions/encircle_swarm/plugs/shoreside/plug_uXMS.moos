@@ -1,0 +1,12 @@
+//--------------------------------------------------
+// uXMS Configuration Block
+
+ProcessConfig = uXMS
+{
+  AppTick   = 1
+  CommsTick = 1
+
+  var = APPCAST_REQ_ALL, DEPLOY_ALL, RETURN_ALL, STATION_ALL
+  var = STATION_HENRY, STATION_GILDA
+  var = RETURN_UPDATES_HENRY, RETURN_UPDATES_GILDA
+}

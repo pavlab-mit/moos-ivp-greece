@@ -1,0 +1,25 @@
+//--------------------------------------------------------
+// pEncircle (moos-ivp-swarm)
+//   Rides on the BHV_Loiter (ENCIRCLE) behavior: consumes NODE_REPORTs
+//   from the whole swarm and publishes LOITER_UPDATE=speed_alt=X so the
+//   vehicles space themselves evenly around the single common circle.
+//   When a new vehicle deploys and acquires the circle, every vehicle's
+//   pEncircle sees it and re-spaces -- a seamless join. Collisions are
+//   handled separately by BHV_AvdColregsV22.
+ProcessConfig = pEncircle
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  circle_position = x=$(CIRCLE_X), y=$(CIRCLE_Y), radius=$(CIRCLE_RAD)
+
+  max_speed   = 2.5     // ceiling on the recommended ownship speed
+  group_speed = 1.0     // nominal speed the ring travels at
+  aggression  = 1
+
+  encircle_active  = true
+  consider_thresh  = 40  // start spacing once within this range of circle
+  on_circle_thresh = 15  // treat as "on circle" within this range
+
+  message_color = dodger_blue
+}
