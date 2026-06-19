@@ -1,0 +1,52 @@
+//-----------------------------------------------------
+// pBBPID Config Block  (cascaded PID: speed -> thrust,
+//                       heading -> yaw-rate -> rudder)
+//
+// Outputs DESIRED_THRUST / DESIRED_RUDDER.
+//   - SIM   : uSimMarineV22 runs in actuator mode and consumes them.
+//             No gyro in sim, so yaw rate is derived from NAV_HEADING.
+//   - BBOAT : pThrustMix converts to DESIRED_THRUST_L/R; yaw rate comes
+//             from the IMU (GYRO_Z_LVL_IMU).
+//-----------------------------------------------------
+
+ProcessConfig = pBBPID
+{
+  AppTick    = 16
+  CommsTick  = 16
+
+  // Gains:  param = Kp, Ki, Kd
+  speed_pid   = 3.0, 0.5, 0.0     // thrust per (m/s) of speed error
+  heading_pid = 1.3, 0.2, 0.0     // outer: heading err (deg) -> yaw rate (deg/s)
+  yawrate_pid = 4.0, 0.5, 0.0     // inner: yaw-rate err (deg/s) -> rudder
+
+  // Limits
+  max_thrust             = 100
+  max_rudder             = 100
+  max_yawrate            = 25      // deg/s default cap (overridden by schedule)
+  speed_integral_limit   = 50
+  yawrate_integral_limit = 50
+
+  // Speed-scheduled yaw-rate gains (linearly interpolated on NAV_SPEED):
+  // turn hard at low speed, ease off as the deep hull resists at speed.
+  enable_gain_schedule = true
+  schedule_point = speed=3.0, kp=3.0, ki=0.10, kd=0.0,  max_yawrate=12
+  schedule_point = speed=1.5, kp=2.0, ki=0.10, kd=0.0,  max_yawrate=20
+  schedule_point = speed=0.5, kp=1.2, ki=0.05, kd=0.2,  max_yawrate=30
+  schedule_point = speed=0.0, kp=1.0, ki=0.05, kd=0.2,  max_yawrate=30
+
+#ifdef XMODE SIM
+  // ----- Sim: no gyro, derive yaw rate from heading -----
+  yawrate_source = derive_heading
+  yawrate_filter = 0.5             // LPF weight on the fresh d(hdg)/dt sample
+  rudder_polarity = 1
+#else
+  // ----- Real boat: gyro feedback from the IMU -----
+  yawrate_source  = external
+  nav_yawrate_var = GYRO_Z_LVL_IMU
+  yawrate_scale   = 57.2958        // VERIFY: rad/s->deg/s; negate if sign flipped
+  rudder_polarity = 1              // VERIFY on bench against pThrustMix
+#endif
+
+  allow_reverse        = false
+  command_stale_thresh = 1.5
+}

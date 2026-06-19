@@ -1,0 +1,32 @@
+//-------------------------------------------
+// uSimMarineV22 Config Block
+
+ProcessConfig = uSimMarineV22
+{
+  AppTick   = 10
+  CommsTick = 10
+
+  start_pos = $(START_POS)
+  prefix    = NAV
+
+  // Physics parameters
+  thrust_map = 100:2
+  turn_rate = 90
+
+  depth_control = false
+  max_acceleration     = 0.2        // meters/sec^2
+  max_deceleration     = 0.5        // meters/sec^2
+  max_depth_rate       = 0.5        // meters/sec
+  max_depth_rate_speed = 2.0        // meters/sec
+
+  // ACTUATOR MODE: the embedded PID is intentionally omitted so the sim
+  // stays "open-loop" on the actuators and consumes DESIRED_THRUST /
+  // DESIRED_RUDDER from pBBPID. uSimMarineV22 couples its internal PID
+  // (acting on DESIRED_HEADING/SPEED) only when PID params are present;
+  // with none here, m_pid_coupled stays false. Do NOT re-add yaw_pid_* /
+  // speed_pid_* unless you want the sim to close the loop itself.
+
+  // Maximums
+  maxrudder  = 100
+  maxthrust  = 100
+}

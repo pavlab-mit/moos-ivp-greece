@@ -1,0 +1,21 @@
+//----------------------------------------------
+// Op-region containment (covers launch line + the circle)
+//----------------------------------------------
+Behavior = BHV_OpRegionV24
+{
+  name    = opreg
+  pwt     = 300
+  updates = RECOVER_UPDATES
+
+  core_poly = pts={-215,-2:-76,-86:-16,6:-79,4}
+
+  dynamic_region_var = RESCUE_REGION
+
+  visual_hints = edge_size = 1
+  visual_hints = save_edge_color = gray30
+  visual_hints = halt_edge_color = gray40
+
+  save_dist = 1
+  halt_dist = 4.5
+  recover_spd = 0.6
+}

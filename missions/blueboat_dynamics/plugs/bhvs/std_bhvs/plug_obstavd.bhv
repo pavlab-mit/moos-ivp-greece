@@ -1,0 +1,62 @@
+//----------------------------------------------
+// Static obstacle avoidance (Hellenic Naval Academy basin)
+//----------------------------------------------
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_1
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-31,-6:-32.17,-3.17:-35,-2:-37.83,-3.17:-39,-6:-37.83,-8.83:-35,-10:-32.17,-8.83}, label=buoy_1
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_2
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-58.5,-17.9:-59.67,-15.07:-62.5,-13.9:-65.33,-15.07:-66.5,-17.9:-65.33,-20.73:-62.5,-21.9:-59.67,-20.73}, label=buoy_2
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
+
+Behavior = BHV_AvoidObstacleV24
+{
+  name       = avdob_buoy_3
+  pwt        = 350
+  condition  = AVOID = true
+  condition  = MODE==ACTIVE
+  perpetual  = true
+
+  polygon    = pts={-91,-28:-92.17,-25.17:-95,-24:-97.83,-25.17:-99,-28:-97.83,-30.83:-95,-32:-92.17,-30.83}, label=buoy_3
+
+  allowable_ttc     = 20
+  pwt_outer_dist    = 10
+  pwt_inner_dist    = 6
+  completed_dist    = 500
+  min_util_cpa_dist = 4
+  max_util_cpa_dist = 8
+  use_refinery      = true
+  holonomic_ok      = true
+}
