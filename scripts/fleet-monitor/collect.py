@@ -221,6 +221,10 @@ class Collector:
         self.radio_interval = float(rc.get("poll_interval_s", 2.0))
         self.radio_timeout = float(rc.get("timeout_s", 4.0))
         self.radio_stale_s = float(rc.get("stale_s", 6.0))
+        # A heard station whose last contact (batman last_seen / wifi inactive)
+        # exceeds this is treated as disconnected and dropped, so the Radio tab
+        # doesn't hang on a vanished radio's last RSSI/TQ. > the 5 s OGM interval.
+        self.radio_station_stale_ms = float(rc.get("station_stale_ms", 8000))
         # Mesh radio interface, used only by the iwinfo fallback (firmware that
         # doesn't generate /tmp/linkstate_current.json -- e.g. older pavlab units).
         self.radio_mesh_dev = rc.get("mesh_device", "wlan0")
@@ -511,6 +515,18 @@ class Collector:
             rec["tq"] = m.get("tq")
             rec["hop_status"] = m.get("hop_status")
             rec["last_seen_msecs"] = m.get("last_seen_msecs")
+
+        # Drop radios the shore radio hasn't heard recently: batman-adv keeps a
+        # disconnected originator around with a growing last_seen, and a dropped
+        # wifi station lingers too -- without this the Radio tab "hangs" on their
+        # last RSSI/TQ. Connected == heard within station_stale_ms.
+        stale_ms = self.radio_station_stale_ms
+        for mac in list(stations):
+            seen = [v for v in (stations[mac].get("last_seen_msecs"),
+                                stations[mac].get("inactive"))
+                    if isinstance(v, (int, float))]
+            if seen and min(seen) > stale_ms:
+                del stations[mac]
 
         si = ls.get("sysinfo", {}) or {}
         cpu = si.get("cpu_load")
