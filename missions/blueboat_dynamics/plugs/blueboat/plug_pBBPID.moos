@@ -29,10 +29,9 @@ ProcessConfig = pBBPID
   // Speed-scheduled yaw-rate gains (linearly interpolated on NAV_SPEED):
   // turn hard at low speed, ease off as the deep hull resists at speed.
   enable_gain_schedule = true
-  schedule_point = speed=3.0, kp=3.0, ki=0.10, kd=0.0,  max_yawrate=12
+  schedule_point = speed=0.5, kp=3.0, ki=0.10, kd=0.0,  max_yawrate=30
   schedule_point = speed=1.5, kp=2.0, ki=0.10, kd=0.0,  max_yawrate=20
-  schedule_point = speed=0.5, kp=1.2, ki=0.05, kd=0.2,  max_yawrate=30
-  schedule_point = speed=0.0, kp=1.0, ki=0.05, kd=0.2,  max_yawrate=30
+  schedule_point = speed=3.0, kp=1.2, ki=0.05, kd=0.2,  max_yawrate=12
 
 #ifdef XMODE SIM
   // ----- Sim: no gyro, derive yaw rate from heading -----
@@ -47,6 +46,6 @@ ProcessConfig = pBBPID
   rudder_polarity = 1              // VERIFY on bench against pThrustMix
 #endif
 
-  allow_reverse        = false
+  allow_reverse        = true
   command_stale_thresh = 1.5
 }

@@ -33,7 +33,7 @@ VEHICLE_TYPE="blueboat"
 
 VNAME="abe"
 COLOR="yellow"
-XMODE="M300"
+XMODE="BBOAT"
 START_POS="10,-10,150"
 RETURN_POS="10,-10"
 SPEED="1.2"
@@ -130,20 +130,18 @@ done
 #------------------------------------------------------------
 #  Part 4: If Heron hardware, set key info based on IP address
 #------------------------------------------------------------
-if [ "${XMODE}" = "M300" ]; then
-    COLOR=`get_heron_info.sh --color`
-    IP_ADDR=`get_heron_info.sh --ip`
-    FSEAT_IP=`get_heron_info.sh --fseat`
-    VNAME=`get_heron_info.sh --name`
+if [ "${XMODE}" = "BBOAT" ]; then
+    VNAME=`get_robot_info_greece.sh --name`
     if [ $? != 0 ]; then
-	echo "$ME: Problem getting Heron Info. Exit Code 2"
+	echo "$ME: Problem getting robot info. Exit Code 2"
 	exit 2
     fi
-    BOAT_TYPE=`get_heron_info.sh --type`
-    if [ "${BOAT_TYPE}" = "blueboat" ]; then
-	XMODE="BBOAT"
-        RADIO_IP=`get_heron_info.sh --radio`
-    fi
+    IP_ADDR=`get_robot_info_greece.sh --ip`
+    FSEAT_IP=`get_robot_info_greece.sh --fseat`
+    COLOR=`get_robot_info_greece.sh --color`
+    RADIO_IP=`get_robot_info_greece.sh --radio`
+    RETURN_POS=`get_robot_info_greece.sh --return`
+    VEHICLE_TYPE="blueboat"
 fi
 
 
