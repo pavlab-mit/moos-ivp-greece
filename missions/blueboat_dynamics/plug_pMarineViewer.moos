@@ -5,7 +5,7 @@ ProcessConfig = pMarineViewer
   CommsTick  = 4
 
   // Hellenic Naval Academy basin (Esri World Imagery, 2026-06-16 datum).
-  tiff_file            = moos_georef_20260616_081356.tif
+  tiff_file            = ../00_shared_assets/maps/moos_georef_20260616_081356.tif
   set_pan_x            = -305
   set_pan_y            = -138
   zoom                 = 1.22

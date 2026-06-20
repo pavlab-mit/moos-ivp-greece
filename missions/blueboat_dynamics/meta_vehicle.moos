@@ -26,8 +26,20 @@ ProcessConfig = ANTLER
   Run = pBBDynamicsMissionManager @ NewConsole = false
 
 #ifdef XMODE SIM
+#ifdef HOSTNAME milan
+  Run = iSimCAT        @ NewConsole = false
+  Run = pBB_DGPS_EKF   @ NewConsole = false
+#else
   Run = uSimMarineV22  @ NewConsole = false
+#endif
+#ifdef CONTROLLER rt
+  Run = pDiffThrustPID_v2 @ NewConsole = false
+#elseifdef CONTROLLER km
   Run = pBBPID         @ NewConsole = false
+#else
+  Run = pMarinePIDV22  @ NewConsole = false
+  Run = pThrustMix     @ NewConsole = false
+#endif
 #elseifdef XMODE M300
   Run = iM300          @ NewConsole = false
   Run = iM300Health    @ NewConsole = false
@@ -42,8 +54,20 @@ ProcessConfig = ANTLER
 }
 
 #ifdef XMODE SIM
+#ifdef HOSTNAME milan
+#include plugs/blueboat/plug_iSimCAT.moos
+#include plugs/blueboat/plug_pBB_DGPS_EKF.moos
+#else
 #include plugs/shared_asv/plug_uSimMarineV22.moos
+#endif
+#ifdef CONTROLLER rt
+#include plugs/blueboat/plug_pDiffThrustPID_v2.moos
+#elseifdef CONTROLLER km
 #include plugs/blueboat/plug_pBBPID.moos
+#else
+#include plugs/blueboat/plug_pMarinePIDV22.moos
+#include plugs/blueboat/plug_pThrustMix.moos
+#endif
 #elseifdef XMODE M300
 #include plugs/heron/plug_iM300.moos
 #include plugs/heron/plug_iM300Health.moos

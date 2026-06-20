@@ -1,0 +1,44 @@
+//-------------------------------------------
+// iSimCAT config block - 6-DOF catamaran dynamics (sim only, no noise)
+//
+// Drop-in for the hardware sensor stack: consumes DESIRED_THRUST_L/R and
+// publishes FIX_STATE_DGNSS + GYRO_Z_LVL_IMU for pBB_DGPS_EKF. All sensor
+// noise is zeroed, so NAV_* out of the EKF tracks ground truth.
+
+ProcessConfig = iSimCAT
+{
+  AppTick   = 100
+  CommsTick = 10
+
+  vname          = $(VNAME)
+  gt_suffix      = _sim
+  vehicle_preset = otter
+  start_pos      = x=$(START_X),y=$(START_Y),heading=$(START_HEADING),speed=0
+  sim_dt         = 0.01
+
+  ahrs_stem = /ahrs_$(VNAME)
+  dvl_stem  = /dvl_$(VNAME)
+
+  water_depth   = 10.0
+  water_density = 1000.0
+
+  gyro_rate_hz   = 100
+  sigma_gyro     = 0.0
+  gyro_bias      = 0.0
+  gyro_bias_walk = 0.0
+
+  gnss_rate_hz       = 10
+  gnss_hdop          = 1.2
+  gnss_heading_valid = true
+  gnss_h_acc         = 0.01
+  ahrs_rate_hz       = 100
+  dvl_enabled        = false
+
+  sigma_gnss_pos     = 0.0
+  sigma_gnss_heading = 0.0
+  sigma_gnss_speed   = 0.0
+  nonlinear_heading_distortion     = 0,0
+  nonlinear_heading_distortion_tau = 7
+
+  rng_seed = 42
+}

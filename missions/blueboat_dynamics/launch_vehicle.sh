@@ -34,7 +34,8 @@ VEHICLE_TYPE="blueboat"
 VNAME="abe"
 COLOR="yellow"
 XMODE="BBOAT"
-START_POS="10,-10,150"
+CONTROLLER="default"
+START_POS="-20,-15,225"
 RETURN_POS="10,-10"
 SPEED="1.2"
 MAX_SPD="3"
@@ -71,6 +72,7 @@ for ARGI; do
 	echo "  --start=<X,Y,HDG>      Start pos/hdg           "
 	echo "  --speed=<m/s>          Default vehicle speed   "
 	echo "  --maxspd=<m/s>         Max Sim and Helm speed  "
+	echo "  --controller=<C>       default | km | rt       "
 	echo "                                                 "
 	echo "  --forest, -f           Set region to Forest Lk "
 	echo "                                                 "
@@ -110,6 +112,8 @@ for ARGI; do
         XMODE="SIM"
     elif [ "${ARGI:0:8}" = "--start=" ]; then
         START_POS="${ARGI#--start=*}"
+    elif [ "${ARGI:0:13}" = "--controller=" ]; then
+        CONTROLLER="${ARGI#--controller=*}"
     elif [ "${ARGI:0:8}" = "--speed=" ]; then
         SPEED="${ARGI#--speed=*}"
     elif [ "${ARGI:0:9}" = "--maxspd=" ]; then
@@ -201,6 +205,12 @@ if [ "${AUTO_LAUNCHED}" = "no" ]; then
     NSFLAGS="--interactive --force"
 fi
 
+HOSTNAME=$(hostname -s | tr 'A-Z' 'a-z')
+START_X="${START_POS%%,*}"
+START_REST="${START_POS#*,}"
+START_Y="${START_REST%%,*}"
+START_HEADING="${START_REST##*,}"
+
 nsplug meta_vehicle.moos targs/targ_$VNAME.moos $NSFLAGS WARP=$TIME_WARP \
        IP_ADDR=$IP_ADDR             MOOS_PORT=$MOOS_PORT \
        PSHARE_PORT=$PSHARE_PORT     SHORE_IP=$SHORE_IP   \
@@ -208,7 +218,10 @@ nsplug meta_vehicle.moos targs/targ_$VNAME.moos $NSFLAGS WARP=$TIME_WARP \
        COLOR=$COLOR                 XMODE=$XMODE         \
        START_POS=$START_POS         MAX_SPD=$MAX_SPD     \
        FSEAT_IP=$FSEAT_IP           VEHICLE_TYPE=$VEHICLE_TYPE \
-       RADIO_IP=$RADIO_IP           REGION=$REGION
+       RADIO_IP=$RADIO_IP           REGION=$REGION       \
+       HOSTNAME=$HOSTNAME           CONTROLLER=$CONTROLLER \
+       START_X=$START_X             START_Y=$START_Y     \
+       START_HEADING=$START_HEADING
 
 nsplug meta_vehicle.bhv targs/targ_$VNAME.bhv $NSFLAGS \
        VNAME=$VNAME  SPEED=$SPEED  ZONE=$ZONE  RETURN_POS=$RETURN_POS

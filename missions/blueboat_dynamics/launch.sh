@@ -50,6 +50,7 @@ for ARGI; do
 	echo "  --amt=N            Num vehicles to launch    "
 	echo "  --rand, -r         Rand vehicle positions    "
 	echo "  --max_spd=N        Max helm/sim speed        "
+	echo "  --controller=C     Controller: default|km|rt "
 	echo "                                               "
 	echo "Options (monte):                               "
 	echo "  --xlaunched, -x    Launched by xlaunch       "
@@ -86,6 +87,8 @@ for ARGI; do
     elif [ "${ARGI}" = "--east" -o "${ARGI}" = "-e" ]; then
 	VLAUNCH_ARGS+=" $ARGI"
     elif [ "${ARGI}" = "--west" -o "${ARGI}" = "-w" ]; then
+	VLAUNCH_ARGS+=" $ARGI"
+    elif [ "${ARGI:0:13}" = "--controller=" ]; then
 	VLAUNCH_ARGS+=" $ARGI"
     else
         echo "$ME: Bad arg:" $ARGI "Exit Code 1."

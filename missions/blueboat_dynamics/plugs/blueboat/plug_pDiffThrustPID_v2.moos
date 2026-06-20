@@ -1,0 +1,32 @@
+//------------------------------------------------------------
+// pDiffThrustPID_v2 config block  (--controller=rt)
+//   DESIRED_HEADING + DESIRED_SPEED  ->  DESIRED_THRUST_L / _R
+
+ProcessConfig = pDiffThrustPID_v2
+{
+  AppTick   = 10
+  CommsTick = 10
+
+#ifdef XMODE SIM
+  // iSimCAT otter preset: heavier, RPM^2 thrusters -> cmd ~ 57*sqrt(v)
+  speed_ff_points = 0,0 : 0.5,40 : 1.0,57 : 1.5,70 : 2.0,81 : 2.5,90 : 3.0,99
+  theta_b         = 45
+  max_yaw_rate    = 20
+#else
+  // BlueBoat (field): fitted cmd ~ 17*v^2
+  speed_ff_points = 0,0 : 0.5,4.25 : 1.0,17 : 1.5,38 : 2.0,68 : 2.4,98
+  theta_b         = 30
+  max_yaw_rate    = 30
+#endif
+
+  speed_ki        = 0
+  speed_i_max     = 15
+
+  yaw_ff_c0    = 1.5
+  yaw_ff_c1    = 2.4
+  yaw_ki       = 0
+  yaw_i_max    = 25
+
+  delta_cap_points = 0,100 : 0.6,100 : 0.8,11 : 1.2,25 : 1.7,50 : 2.4,50
+  u_max            = 100
+}
