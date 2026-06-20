@@ -66,8 +66,7 @@ Behavior = BHV_Waypoint
   capture_radius = 3.0 
     capture_line = true
      slip_radius = 8.0
-          points = -66,-34:-110,-58
-//          points = -190,-8:-150,-32:-110,-58:-66,-34:-38,-2
+          points = -190,-8:-150,-32:-110,-58:-66,-34:-38,-2
 
 	crs_spd_zaic_ratio = 85
 	
