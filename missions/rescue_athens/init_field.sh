@@ -23,11 +23,9 @@ GAME_FORMAT="r1"
 SWIMMERS=15
 UNREGERS=0
 SWIM_FILE="athens_rand.txt"
-OP1="-138.0,-13.4:-89.3,-42.8:-68.3,-10.6:-90.4,-11.3"
-OP2="-161.7,-9.9:-85.2,-56.1:-52.2,-5.5:-86.9,-6.6"
-OP3="-185.4,-6.4:-81.1,-69.4:-36.1,-0.4:-83.4,-1.9"
-OP4="-215.0,-2.0:-76.0,-86.0:-16.0,6.0:-79.0,4.0"
-SWIM_REGION=$OP4
+OP1="-215,-2:-16,6:-76,-86"
+OP2="-215,-2:-16,6:-76,-86"
+SWIM_REGION=$OP1
 
 #------------------------------------------------------------
 #  Part 3: Check for and handle command-line arguments
@@ -48,8 +46,6 @@ for ARGI; do
 	echo "                                               "
 	echo "  --op1              Gen rand swimmers in op1  " 
 	echo "  --op2              Gen rand swimmers in op2  " 
-	echo "  --op3              Gen rand swimmers in op3  " 
-	echo "  --op4              Gen rand swimmers in op4  " 
 	echo "  --swim_file=<file> Set the swim file         " 
 	echo "  --swimmers=<15>    Rand gen N reg swimmers   " 
 	echo "  --unreg=<0>        Rand gen N unreg swimmers " 
@@ -71,12 +67,6 @@ for ARGI; do
 	RAND_SWIMMERS="true"
     elif [ "${ARGI}" = "-op2" -o "${ARGI}" = "--op2" ]; then
 	SWIM_REGION=$OP2
-	RAND_SWIMMERS="true"
-    elif [ "${ARGI}" = "-op3" -o "${ARGI}" = "--op3" ]; then
-	SWIM_REGION=$OP3
-	RAND_SWIMMERS="true"
-    elif [ "${ARGI}" = "-op4" -o "${ARGI}" = "--op4" ]; then
-	SWIM_REGION=$OP4
 	RAND_SWIMMERS="true"
     elif [ "${ARGI:0:11}" = "--swimmers=" ]; then
         SWIMMERS="${ARGI#--swimmers=*}"
@@ -109,8 +99,8 @@ echo "VEHICLE_AMT = $VEHICLE_AMT"
 if [ "${VPOS_CNT}" != "${VEHICLE_AMT}" ]; then
     rm -f vpositions.txt 
 fi
-# Always regenerate deterministic starts so launcher updates are not masked by
-# stale vpositions.txt from a prior same-vehicle-count run.
+# Always regenerate deterministic starts so launcher updates are not
+# masked by stale vpositions.txt from a prior same-vehicle-count run.
 if [ "${RAND_VPOS}" = "yes" ]; then
     pickpos --poly="$SWIM_REGION" --buffer=5 \
             --amt=$VEHICLE_AMT --hdg="0,359,0" > vpositions.txt
