@@ -11,8 +11,8 @@
 
 ProcessConfig = pBB_AthensLogger
 {
-   AppTick   = 4
-   CommsTick = 4
+   AppTick   = 20
+   CommsTick = 20
 
    vname    = $(VNAME)
    log_dir  = /home/pi/bb_daily_logs
