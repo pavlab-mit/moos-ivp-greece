@@ -30,7 +30,7 @@ ProcessConfig = iBackSeatBroker
    // Estimator state, setpoints, and current estimate forwarded to the
    // front seat so pBB_AthensLogger captures closed-loop control data
    // (these live only on the back seat; no front-seat app consumes them).
-   tx_vars = NAV_X,NAV_Y,NAV_HEADING,NAV_SPEED,NAV_COG
+   tx_vars = NAV_X,NAV_Y,NAV_HEADING,NAV_SPEED,NAV_COG,NAV_STATE
    tx_vars = DESIRED_HEADING,DESIRED_SPEED,DESIRED_RUDDER,DESIRED_THRUST,TURN_RATE
    tx_vars = DRIFT_VX,DRIFT_VY,DRIFT_SPEED,DRIFT_DIR
 
