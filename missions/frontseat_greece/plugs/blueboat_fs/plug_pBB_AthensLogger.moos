@@ -1,0 +1,27 @@
+//------------------------------------------------
+// pBB_AthensLogger config block
+//
+// Front-seat data logger (pure sink). Subscribes to the whole
+// front-seat MOOSDB and appends every update, as it arrives, to one
+// per-day pipe-delimited file:  LOG_<vname>_<YYYYMMDD>.psv
+//
+// Missions are separated after the fact by the logged MISSION_HASH
+// rows. log_dir is an absolute, launch-stable path so all of a day's
+// missions append to the same file as students rotate through.
+
+ProcessConfig = pBB_AthensLogger
+{
+   AppTick   = 4
+   CommsTick = 4
+
+   vname    = $(VNAME)
+   log_dir  = /home/pi/bb_daily_logs
+
+   wildcard = true
+   utc      = false
+
+   // omit/keep/log are optional; sensible defaults are built in.
+   // keep = BB_STATUS
+
+   debug    = false
+}

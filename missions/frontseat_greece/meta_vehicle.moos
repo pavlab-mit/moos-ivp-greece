@@ -17,6 +17,7 @@ ProcessConfig = ANTLER
   Run = iBBNavigatorInterface  @ NewConsole = false
   Run = iFrontSeatBroker       @ NewConsole = false
   Run = pBB_Status             @ NewConsole = false
+  Run = pBB_AthensLogger       @ NewConsole = false
 
   #ifdef DEBUG true
   Run = uFldNodeBroker     @ NewConsole = false
@@ -33,6 +34,7 @@ ProcessConfig = ANTLER
 #include plugs/blueboat_fs/plug_iBBNavigatorInterface.moos
 #include plugs/blueboat_fs/plug_uProcessWatch.moos
 #include plugs/blueboat_fs/plug_pBB_Status.moos
+#include plugs/blueboat_fs/plug_pBB_AthensLogger.moos
 
 #ifdef DEBUG true
 #include plugs/blueboat_fs/plug_pShare.moos
