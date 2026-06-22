@@ -24,7 +24,7 @@ trap on_exit SIGINT
 ME=`basename "$0"`
 CMD_ARGS=""
 VERBOSE=""
-REPOS_DIR="/Users/mikerb/Research/autotest/harnesses_2680"
+REPOS_DIR="/Users/mikerb/Research/autotest/harness_athens"
 REPO1="moos-ivp-mrb"
 REPO2="moos-ivp-mrb"
 

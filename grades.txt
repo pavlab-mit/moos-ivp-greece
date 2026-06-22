@@ -1,0 +1,78 @@
+
+Lab 10 Rescue Part 2 (running a BlueBoat with their Pablo)
+==============================================================
+Num  Name                    Done (or empty)
+---  --------------------    ---------------
+01   Vaios Karastathis       
+02   Alexios Vavvas        
+03   Georgios Chrysanidis  
+04   Dimitris Koupatsiaris 
+05   Kostas Charisis       
+---  --------------------    ---------------
+06   George Souchlas       
+07   Manos Gonidakis       
+08   Kyriakos Alexiou      
+09   Athanasios Dimopoulos 
+10   Eleftherios Alifragkis
+---  --------------------    ---------------
+11   Konstantinos Voskakis 
+12   George Pouraimis      
+13   Dimitrios Papachristos
+14   Eustathios Raptis     
+15   Karolos Geroulanos    
+---  --------------------    ---------------
+16   Georgios Loukas       
+17   John Giordamlis       
+18   Iason Dimou           
+19   Evangelos Siatis      
+20   Vasileios Linardos    
+---  --------------------    ---------------
+21   Nikolaos Papanikolas  
+22   Ioannis Kotsifakis    
+23   Ilias Pantazopoulos   
+24   Giorgos Dimitropoulos 
+25   Panagiotis-Rafail
+     Athanasopoulos 
+---  --------------------    ---------------
+
+
+
+
+
+
+
+Overall Roster
+--------------------------------------------------
+
+Nub  Name                  Email
+---   --------            -----  --------------------  ---------------
+01    jjacke13                   Vaios Karastathis     <vaios.k@pm.me>
+02    AlexiosVavvas        yes   Alexios Vavvas        <AVavvas@qualco.eu>
+03    geochrys             yes   Georgios Chrysanidis  <geochrysanidis@gmail.com>
+04    dkoupats             yes   Dimitris Koupatsiaris <jimakoups@gmail.com>    
+05    kosCharisis          yes   Kostas Charisis       <harisis_kostas@hotmail.com>
+---   ----------------     ---   --------------------  --------------------------------
+06    GitGudScrub667             George Souchlas       <xeqtor667@gmail.com>
+07    manosgonidakis       yes   Manos Gonidakis       <mgonidakis@assogroup.com>
+08    kiriakosal2017-dot         Kyriakos Alexiou      <kiriakosal2017@gmail.com>
+09    dimotha              yes   Athanasios Dimopoulos <dimotha@gmail.com>
+10    lefteris3544         yes   Eleftherios Alifragkis <e.alifragkis@outlook.com>
+---   ----------------     ---   --------------------  --------------------------------
+11    konstantinos779      yes   Konstantinos Voskakis <kvoskaki@hotmail.com>
+12    gprms                yes   George Pouraimis      <gpouraimis@googlemail.com>, g.pouraimis@elkak.gr
+13                               Dimitrios Papachristos <dimpap2009@gmail.com>
+14    Stathes1             yes   Eustathios Raptis     <staraptis1@gmail.com>
+15    gkarolos             yes   Karolos Geroulanos    <gkarolos3@gmail.com>
+---   ----------------     ---   --------------------  --------------------------------
+16    isLouke              yes   Georgios Loukas       <georgios.a.loukas@gmail.com>
+17    johngior             yes   John Giordamlis       <john@prismael.com>
+18                               Iason Dimou           <i.dimou@elkak.gr>
+19    vagsgr               yes   Evangelos Siatis      <vagsiatis@gmail.com>
+20    blinardos453               Vasileios Linardos    <v.linardos@hellenicnavy.gr>, blinardos453@yahoo.gr
+---   ----------------     ---   --------------------  --------------------------------
+21    NikosSPap            yes   Nikolaos Papanikolas  <nikos.sim.p@gmail.com>
+22    JohnKotsif           yes   Ioannis Kotsifakis    <gianniskotsif@gmail.com>
+23    iliaspantazopoulos   yes   Ilias Pantazopoulos   <ilias_pantazopoulos@yahoo.gr>
+24    GeorgeDimitropoulos  yes   Giorgos Dimitropoulos <georgios.dimitropoulos@sthenos.ai>
+25    prathanasopoulos-png yes   Panagiotis-Rafail Athanasopoulos <prathanasopoulos@gmail.com>
+---   ----------------     ---   --------------------  --------------------------------
