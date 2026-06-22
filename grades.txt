@@ -4,27 +4,27 @@ Lab 10 Rescue Part 2 (running a BlueBoat with their Pablo)
 Num  Name                    Done (or empty)
 ---  --------------------    ---------------
 01   Vaios Karastathis       
-02   Alexios Vavvas        
-03   Georgios Chrysanidis  
+02   Alexios Vavvas          Done
+03   Georgios Chrysanidis    
 04   Dimitris Koupatsiaris 
 05   Kostas Charisis         Done
 ---  --------------------    ---------------
 06   George Souchlas       
 07   Manos Gonidakis         Done 
 08   Kyriakos Alexiou      
-09   Athanasios Dimopoulos 
+09   Athanasios Dimopoulos   Done
 10   Eleftherios Alifragkis
 ---  --------------------    ---------------
 11   Konstantinos Voskakis 
 12   George Pouraimis      
 13   Dimitrios Papachristos
 14   Eustathios Raptis     
-15   Karolos Geroulanos    
+15   Karolos Geroulanos       
 ---  --------------------    ---------------
 16   Georgios Loukas       
-17   John Giordamlis       
+17   John Giordamlis         Done
 18   Iason Dimou           
-19   Evangelos Siatis      
+19   Evangelos Siatis        Done
 20   Vasileios Linardos    
 ---  --------------------    ---------------
 21   Nikolaos Papanikolas  
