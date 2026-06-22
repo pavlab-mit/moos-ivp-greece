@@ -15,17 +15,17 @@ Num  Name                    Done (or empty)
 09   Athanasios Dimopoulos   Done
 10   Eleftherios Alifragkis
 ---  --------------------    ---------------
-11   Konstantinos Voskakis 
-12   George Pouraimis      
+11   Konstantinos Voskakis   Done
+12   George Pouraimis        Done
 13   Dimitrios Papachristos
-14   Eustathios Raptis     
+14   Eustathios Raptis       Done
 15   Karolos Geroulanos       
 ---  --------------------    ---------------
 16   Georgios Loukas       
 17   John Giordamlis         Done
-18   Iason Dimou           
+18   Iason Dimou             Done
 19   Evangelos Siatis        Done
-20   Vasileios Linardos    
+20   Vasileios Linardos      Done
 ---  --------------------    ---------------
 21   Nikolaos Papanikolas  
 22   Ioannis Kotsifakis    
