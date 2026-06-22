@@ -7,10 +7,10 @@ Num  Name                    Done (or empty)
 02   Alexios Vavvas        
 03   Georgios Chrysanidis  
 04   Dimitris Koupatsiaris 
-05   Kostas Charisis       
+05   Kostas Charisis         Done
 ---  --------------------    ---------------
 06   George Souchlas       
-07   Manos Gonidakis       
+07   Manos Gonidakis         Done 
 08   Kyriakos Alexiou      
 09   Athanasios Dimopoulos 
 10   Eleftherios Alifragkis
