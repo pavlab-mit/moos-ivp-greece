@@ -47,9 +47,16 @@ ProcessConfig = ANTLER
 #elseifdef XMODE BBOAT
   Run = iBackSeatBroker  @ NewConsole = false
   Run = pBB_DGPS_EKF     @ NewConsole = false
+  Run = pBB_Health       @ NewConsole = false
+#ifdef CONTROLLER rt
+  Run = pDiffThrustPID_v2 @ NewConsole = false
+#elseifdef CONTROLLER km
   Run = pBBPID           @ NewConsole = false
   Run = pThrustMix       @ NewConsole = false
-  Run = pBB_Health       @ NewConsole = false
+#else
+  Run = pMarinePIDV22    @ NewConsole = false
+  Run = pThrustMix       @ NewConsole = false
+#endif
 #endif
 }
 
@@ -75,9 +82,16 @@ ProcessConfig = ANTLER
 #elseifdef XMODE BBOAT
 #include plugs/blueboat/plug_iBackSeatBroker.moos
 #include plugs/blueboat/plug_pBB_DGPS_EKF.moos
+#include plugs/blueboat/plug_pBB_Health.moos
+#ifdef CONTROLLER rt
+#include plugs/blueboat/plug_pDiffThrustPID_v2.moos
+#elseifdef CONTROLLER km
 #include plugs/blueboat/plug_pBBPID.moos
 #include plugs/blueboat/plug_pThrustMix.moos
-#include plugs/blueboat/plug_pBB_Health.moos
+#else
+#include plugs/blueboat/plug_pMarinePIDV22.moos
+#include plugs/blueboat/plug_pThrustMix.moos
+#endif
 #endif
 
 #include plugs/blueboat/plug_pBBDynamicsMissionManager.moos
