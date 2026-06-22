@@ -148,11 +148,11 @@ done
 #  Part 4: If not sim, set key info based on IP address
 #------------------------------------------------------------
 if [ "${XMODE}" = "" ]; then
-    COLOR=`get_robot_info.sh --color`
-    IP_ADDR=`get_robot_info.sh --ip`
-    FSEAT_IP=`get_robot_info.sh --fseat`
-    VNAME=`get_robot_info.sh --name`
-    XMODE=`get_robot_info.sh --TYPE`
+    COLOR=`get_robot_info_greece.sh --color`
+    IP_ADDR=`get_robot_info_greece.sh --ip`
+    FSEAT_IP=`get_robot_info_greece.sh --fseat`
+    VNAME=`get_robot_info_greece.sh --name`
+    XMODE=`get_robot_info_greece.sh --TYPE`
     if [ "$XMODE" = "" -o "$IP_ADDR" = "localhost" ]; then
 	echo "$ME: Problem getting Robot Info. Exit Code 2"
 	exit 2
