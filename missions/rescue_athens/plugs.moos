@@ -147,6 +147,9 @@ ProcessConfig = iBackSeatBroker
    //startup id
    startup_id_repeat_frames = 20
 
+   //logging of dropouts
+   //post_drop_deltas_to_moos = true
+
    // Backseat listens locally for front-seat telemetry.
    // In missions this usually maps to the vehicle-side IP.
    listen_ip   = $(IP_ADDR)
@@ -157,8 +160,10 @@ ProcessConfig = iBackSeatBroker
    tx_ip   = $(FSEAT_IP)
    tx_port = 9444
 
-   // MOOS vars sent every Iterate tick if available
-   tx_vars = DESIRED_THRUST_L,DESIRED_THRUST_R,ALL_STOP
+   // MOOS vars sent every Iterate tick if available.
+   // Helm/state vars (IVPHELM_STATE, MODE, DEPLOY) are forwarded so the
+   // front seat can mirror back-seat autonomy state.
+   tx_vars = DESIRED_THRUST_L,DESIRED_THRUST_R,ALL_STOP,MISSION_COMPLETE,IVPHELM_STATE,MODE,DEPLOY
 
    // Optional inbound remap: WIRE_VAR:MOOS_VAR
    in_map = NAV_SPEED:NAV_SPEED_GPS, NAV_LAT:NAV_LAT_GPS, NAV_LONG:NAV_LONG_GPS
@@ -254,8 +259,8 @@ ProcessConfig = pBB_DGPS_EKF
   CommsTick = 16
 
   // Input variable names
-  input_gps_state = GPS_STATE        // Bundled GPS from iUnicoreGPS
-  input_gyro_z    = GYRO_LVL_Z       // Level-frame gyro Z (rad/s)
+  input_gps_state = GNSS_STATE       // Platform-agnostic GNSS state
+  input_gyro_z    = GYRO_Z_LVL_IMU   // Level-frame gyro Z (rad/s)
   input_thrust_l  = DESIRED_THRUST_L // Left thruster command (0-100)
   input_thrust_r  = DESIRED_THRUST_R // Right thruster command (0-100)
 
