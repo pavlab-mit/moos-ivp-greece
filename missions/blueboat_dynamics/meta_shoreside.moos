@@ -20,6 +20,11 @@ Processconfig = ANTLER
   Run = uFldShoreBroker @ NewConsole = false
   Run = uFldNodeComms   @ NewConsole = false
   Run = pRealm          @ NewConsole = false
+#ifdef CONTROLLER km
+#ifdef LAUNCH_TUNER yes
+  Run = uBBPIDTuner     @ NewConsole = false
+#endif
+#endif
 }
 
 #include plugs/shared_all/plug_pShare.moos
@@ -31,3 +36,8 @@ Processconfig = ANTLER
 #include plugs/shoreside/plug_uFldNodeComms.moos
 #include plugs/shoreside/plug_pLogger.moos
 #include plug_pMarineViewer.moos
+#ifdef CONTROLLER km
+#ifdef LAUNCH_TUNER yes
+#include plugs/shoreside/plug_uBBPIDTuner.moos
+#endif
+#endif

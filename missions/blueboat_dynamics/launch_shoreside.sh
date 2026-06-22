@@ -23,6 +23,8 @@ VERBOSE=""
 CONFIRM="yes"
 AUTO_LAUNCHED="no"
 LAUNCH_GUI="yes"
+LAUNCH_TUNER="no"
+CONTROLLER="default"
 
 IP_ADDR="localhost"
 MOOS_PORT="9000"
@@ -31,6 +33,7 @@ PSHARE_PORT="9200"
 REGION="pavlab"
 VNAMES=""
 XMODE="SHORE"
+MISSION_NAME=""
 
 FORCE_IP=""
 
@@ -80,6 +83,10 @@ for ARGI; do
         LAUNCH_GUI="no"
     elif [ "${ARGI}" = "--sim" -o "${ARGI}" = "-s" ]; then
         XMODE="SIM"
+    elif [ "${ARGI}" = "--tuner" ]; then
+        LAUNCH_TUNER="yes"
+    elif [ "${ARGI:0:13}" = "--controller=" ]; then
+        CONTROLLER="${ARGI#--controller=*}"
 
     elif [ "${ARGI:0:5}" = "--ip=" ]; then
         IP_ADDR="${ARGI#--ip=*}"
@@ -90,6 +97,8 @@ for ARGI; do
         PSHARE_PORT="${ARGI#--pshare=*}"
     elif [ "${ARGI:0:9}" = "--vnames=" ]; then
         VNAMES="${ARGI#--vnames=*}"
+    elif [ "${ARGI:0:8}" = "--mname=" ]; then
+        MISSION_NAME="${ARGI#--mname=*}"
 
     elif [ "${ARGI}" = "--forest" -o "${ARGI}" = "-f" ]; then
         REGION="forest_lake"
@@ -139,7 +148,12 @@ fi
 #------------------------------------------------------------
 #  Part 6: Create the shoreside mission file
 #------------------------------------------------------------
-mkdir -p targs logs
+mkdir -p targs
+
+if [ "$MISSION_NAME" = "" ]; then
+    MISSION_NAME=$(mhash_gen)
+fi
+mkdir -p logs/$MISSION_NAME
 
 NSFLAGS="--strict --force"
 if [ "${AUTO_LAUNCHED}" = "no" ]; then
@@ -150,7 +164,9 @@ nsplug meta_shoreside.moos targs/targ_shoreside.moos $NSFLAGS WARP=$TIME_WARP \
        IP_ADDR=$IP_ADDR             MOOS_PORT=$MOOS_PORT    \
        PSHARE_PORT=$PSHARE_PORT     LAUNCH_GUI=$LAUNCH_GUI  \
        VNAMES=$VNAMES               REGION=$REGION          \
-       XMODE=$XMODE                 FORCE_IP=$FORCE_IP
+       XMODE=$XMODE                 FORCE_IP=$FORCE_IP      \
+       MISSION_NAME=$MISSION_NAME   LAUNCH_TUNER=$LAUNCH_TUNER \
+       CONTROLLER=$CONTROLLER
 
 if [ "${JUST_MAKE}" = "yes" ]; then
     echo "$ME: Targ files made; exiting without launch."

@@ -36,10 +36,13 @@ COLOR="yellow"
 XMODE="BBOAT"
 CONTROLLER="default"
 START_POS="-20,-15,225"
+START_POS_SET=""
 RETURN_POS="10,-10"
 SPEED="1.2"
 MAX_SPD="3"
 RADIO_IP=""
+MISSION_NAME=""
+LAUNCH_TUNER="no"
 
 REGION="pavlab"
 ZONE=""
@@ -112,12 +115,19 @@ for ARGI; do
         XMODE="SIM"
     elif [ "${ARGI:0:8}" = "--start=" ]; then
         START_POS="${ARGI#--start=*}"
+        START_POS_SET="yes"
     elif [ "${ARGI:0:13}" = "--controller=" ]; then
         CONTROLLER="${ARGI#--controller=*}"
     elif [ "${ARGI:0:8}" = "--speed=" ]; then
         SPEED="${ARGI#--speed=*}"
     elif [ "${ARGI:0:9}" = "--maxspd=" ]; then
         MAX_SPD="${ARGI#--maxspd=*}"
+    elif [ "${ARGI:0:10}" = "--max_spd=" ]; then
+        MAX_SPD="${ARGI#--max_spd=*}"
+    elif [ "${ARGI:0:8}" = "--mname=" ]; then
+        MISSION_NAME="${ARGI#--mname=*}"
+    elif [ "${ARGI}" = "--tuner" ]; then
+        LAUNCH_TUNER="yes"
 
     elif [ "${ARGI}" = "--forest" -o "${ARGI}" = "-f" ]; then
         REGION="forest_lake"
@@ -146,6 +156,23 @@ if [ "${XMODE}" = "BBOAT" ]; then
     RADIO_IP=`get_robot_info_greece.sh --radio`
     RETURN_POS=`get_robot_info_greece.sh --return`
     VEHICLE_TYPE="blueboat"
+fi
+
+#------------------------------------------------------------
+#  Part 4b: SIM start position per fleet vehicle (unless given)
+#           Same roster/coords as the encircle_swarm mission.
+#------------------------------------------------------------
+if [ "${XMODE}" = "SIM" -a "${START_POS_SET}" != "yes" ]; then
+    case "$VNAME" in
+        asha) START_POS="-16,-13"    ;;
+        bama) START_POS="-20,-17.2"  ;;
+        chip) START_POS="-24,-21.4"  ;;
+        dale) START_POS="-28,-25.6"  ;;
+        ewan) START_POS="-32,-29.8"  ;;
+        flex) START_POS="-36,-34"    ;;
+        *)    START_POS="-16,-13"    ;;
+    esac
+    RETURN_POS=$START_POS
 fi
 
 
@@ -198,7 +225,12 @@ fi
 #------------------------------------------------------------
 #  Part 7: Create the .moos and .bhv files.
 #------------------------------------------------------------
-mkdir -p targs logs
+mkdir -p targs
+
+if [ "$MISSION_NAME" = "" ]; then
+    MISSION_NAME=$(mhash_gen)
+fi
+mkdir -p logs/$MISSION_NAME
 
 NSFLAGS="--strict --force"
 if [ "${AUTO_LAUNCHED}" = "no" ]; then
@@ -221,7 +253,8 @@ nsplug meta_vehicle.moos targs/targ_$VNAME.moos $NSFLAGS WARP=$TIME_WARP \
        RADIO_IP=$RADIO_IP           REGION=$REGION       \
        HOSTNAME=$HOSTNAME           CONTROLLER=$CONTROLLER \
        START_X=$START_X             START_Y=$START_Y     \
-       START_HEADING=$START_HEADING
+       START_HEADING=$START_HEADING \
+       MISSION_NAME=$MISSION_NAME   LAUNCH_TUNER=$LAUNCH_TUNER
 
 nsplug meta_vehicle.bhv targs/targ_$VNAME.bhv $NSFLAGS \
        VNAME=$VNAME  SPEED=$SPEED  ZONE=$ZONE  RETURN_POS=$RETURN_POS

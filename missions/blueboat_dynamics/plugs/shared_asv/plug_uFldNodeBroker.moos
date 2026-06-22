@@ -28,6 +28,15 @@ ProcessConfig = uFldNodeBroker
   bridge = src=NODE_REPORT_LOCAL,  alias=NODE_REPORT
   bridge = src=QUIT_MISSION
 
+  // pBBPID scope telemetry, piped vehicle->shore for the tuner GUI.
+  // (Plain names: assumes one vehicle is being tuned at a time.)
+  bridge = src=NAV_SPEED
+  bridge = src=NAV_HEADING
+  bridge = src=DESIRED_SPEED
+  bridge = src=DESIRED_HEADING
+  bridge = src=BBPID_DESIRED_YAWRATE
+  bridge = src=BBPID_MEAS_YAWRATE
+
 #ifdef MEDIATED yes
   bridge = src=MEDIATED_MESSAGE_LOCAL, alias=MEDIATED_MESSAGE
   bridge = src=ACK_MESSAGE_LOCAL, alias=ACK_MESSAGE

@@ -59,6 +59,10 @@ ProcessConfig = pMarineViewer
   button_10 = SPD_1.0 # ENCIRCLE_GRP_SPEED_ALL=1.0
   button_11 = SPD_1.8 # ENCIRCLE_GRP_SPEED_ALL=1.8
 
+  //--- Encircle direction: CW/CCW reverse the ring ------------
+  button_12 = CW  # LOITER_UPDATE_ALL=clockwise=true
+  button_13 = CCW # LOITER_UPDATE_ALL=clockwise=false
+
   //--- Left-click posts a GOTO TASK: all vehicles bid, the closest wins
   //    and transits to the point, then rejoins the ring. id==hash keys on
   //    the click counter ($[IX]) so each click is a distinct task.

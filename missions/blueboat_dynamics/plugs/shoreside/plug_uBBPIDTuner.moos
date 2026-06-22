@@ -1,0 +1,19 @@
+//-----------------------------------------------------
+// uBBPIDTuner Config Block  (pymoos2 GUI: live pBBPID
+// tuner + desired/measured scope) -- SHORESIDE.
+//
+// Runs in the shoreside community and connects to the
+// shoreside MOOSDB (ServerPort). Tuning vars are published
+// with a "_ALL" suffix so uFldShoreBroker qbridge broadcasts
+// them to the vehicle(s) as the plain names pBBPID expects
+// (e.g. BBPID_SPEED_KP_ALL -> vehicle BBPID_SPEED_KP).
+//
+// Plot telemetry (NAV_*/DESIRED_*/BBPID_*_YAWRATE) is bridged
+// up from the vehicle by uFldNodeBroker.
+//-----------------------------------------------------
+
+ProcessConfig = uBBPIDTuner
+{
+  history        = 30
+  publish_suffix = _ALL
+}

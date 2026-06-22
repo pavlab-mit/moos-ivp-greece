@@ -17,5 +17,16 @@ ProcessConfig = uFldShoreBroker
   qbridge  = MEDIATED_MESSAGE, ACK_MESSAGE, TERM_REPORT_INTERVAL
   qbridge  = COMMS_POLICY
 
+  // pBBPID tuning, piped shore->vehicle (km controller only). The tuner
+  // posts e.g. BBPID_SPEED_KP_ALL on shoreside; qbridge delivers
+  // BBPID_SPEED_KP to each vehicle (where pBBPID subscribes).
+#ifdef CONTROLLER km
+  qbridge  = BBPID_SPEED_KP, BBPID_SPEED_KI, BBPID_SPEED_KD
+  qbridge  = BBPID_HEADING_KP, BBPID_HEADING_KI, BBPID_HEADING_KD
+  qbridge  = BBPID_YAWRATE_KP, BBPID_YAWRATE_KI, BBPID_YAWRATE_KD
+  qbridge  = BBPID_SCHEDULE_ENABLE, BBPID_SCHEDULE_POINT, BBPID_SCHEDULE_CLEAR
+  qbridge  = BBPID_FF_ENABLE
+#endif
+
 	app_logging = off
 }

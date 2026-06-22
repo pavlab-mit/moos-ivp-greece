@@ -23,7 +23,9 @@ ProcessConfig = pBBPID
   max_thrust             = 100
   max_rudder             = 100
   max_yawrate            = 25      // deg/s default cap (overridden by schedule)
-  speed_integral_limit   = 50
+  // Speed integral must be able to supply the full steady thrust to hold a
+  // commanded speed (P contributes 0 at zero error), so cap it at max_thrust.
+  speed_integral_limit   = 100
   yawrate_integral_limit = 50
 
   // Speed-scheduled yaw-rate gains (linearly interpolated on NAV_SPEED):
@@ -33,17 +35,33 @@ ProcessConfig = pBBPID
   schedule_point = speed=1.5, kp=2.0, ki=0.10, kd=0.0,  max_yawrate=20
   schedule_point = speed=3.0, kp=1.2, ki=0.05, kd=0.2,  max_yawrate=12
 
+  // ----- Feedforward (identified from BlueBoat field logs, bb_dynamics_id.py)
+  //   common c = c0 + cv*v* + crr*r*^2     -> added to DESIRED_THRUST
+  //   diff   d = d0 + dr*r* + dvr*v* * r*  -> added to DESIRED_RUDDER (scaled)
+  //   v* = desired speed [m/s], r* = desired yaw rate [deg/s]
+  // The PID loops then only correct the residual.
+  ff_speed = 4.428, 4.960, 0.4505     // c0, cv, crr
+  ff_yaw   = -3.420, -6.0653, 8.4952  // d0, dr, dvr  (dvr = v*r coupling)
+
 #ifdef XMODE SIM
   // ----- Sim: no gyro, derive yaw rate from heading -----
   yawrate_source = derive_heading
   yawrate_filter = 0.5             // LPF weight on the fresh d(hdg)/dt sample
   rudder_polarity = 1
+  // FF was identified on the REAL boat; uSimMarineV22's thrust_map differs,
+  // so leave it OFF in sim (toggle live with BBPID_FF_ENABLE=true to test).
+  ff_enable        = true
+  ff_rudder_scale  = 1.0
 #else
   // ----- Real boat: gyro feedback from the IMU -----
   yawrate_source  = external
   nav_yawrate_var = GYRO_Z_LVL_IMU
   yawrate_scale   = 57.2958        // VERIFY: rad/s->deg/s; negate if sign flipped
   rudder_polarity = 1              // VERIFY on bench against pThrustMix
+  ff_enable        = true
+  // differential-thrust-% -> DESIRED_RUDDER units (via pThrustMix). CALIBRATE:
+  // start at 1.0, adjust so FF alone roughly holds a commanded turn rate.
+  ff_rudder_scale  = 1.0
 #endif
 
   allow_reverse        = true
