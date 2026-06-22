@@ -13,8 +13,8 @@
 
 ProcessConfig = iBBNavigatorInterface
 {
-  AppTick   = 10
-  CommsTick = 10
+  AppTick   = 20
+  CommsTick = 20
 
   //=========================================================
   // THRUST CONTROL

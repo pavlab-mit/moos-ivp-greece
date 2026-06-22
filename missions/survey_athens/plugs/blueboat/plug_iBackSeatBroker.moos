@@ -27,6 +27,13 @@ ProcessConfig = iBackSeatBroker
    // front seat can mirror back-seat autonomy state.
    tx_vars = DESIRED_THRUST_L,DESIRED_THRUST_R,ALL_STOP,MISSION_COMPLETE,IVPHELM_STATE,MODE,DEPLOY
 
+   // Estimator state, setpoints, and current estimate forwarded to the
+   // front seat so pBB_AthensLogger captures closed-loop control data
+   // (these live only on the back seat; no front-seat app consumes them).
+   tx_vars = NAV_X,NAV_Y,NAV_HEADING,NAV_SPEED,NAV_COG
+   tx_vars = DESIRED_HEADING,DESIRED_SPEED,DESIRED_RUDDER,DESIRED_THRUST,TURN_RATE
+   tx_vars = DRIFT_VX,DRIFT_VY,DRIFT_SPEED,DRIFT_DIR
+
    // Optional inbound remap: WIRE_VAR:MOOS_VAR
    in_map = NAV_SPEED:NAV_SPEED_GPS, NAV_LAT:NAV_LAT_GPS, NAV_LONG:NAV_LONG_GPS
 

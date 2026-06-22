@@ -19,8 +19,17 @@ ProcessConfig = iBackSeatBroker
    tx_ip   = $(FSEAT_IP)
    tx_port = 9444
 
-   // MOOS vars sent every Iterate tick if available
-   tx_vars = DESIRED_THRUST_L,DESIRED_THRUST_R,ALL_STOP,MISSION_COMPLETE
+   // MOOS vars sent every Iterate tick if available.
+   // Helm/state vars (IVPHELM_STATE, MODE, DEPLOY) are forwarded so the
+   // front seat can mirror back-seat autonomy state.
+   tx_vars = DESIRED_THRUST_L,DESIRED_THRUST_R,ALL_STOP,MISSION_COMPLETE,IVPHELM_STATE,MODE,DEPLOY
+
+   // Estimator state, setpoints, and current estimate forwarded to the
+   // front seat so pBB_AthensLogger captures closed-loop control data
+   // (these live only on the back seat; no front-seat app consumes them).
+   tx_vars = NAV_X,NAV_Y,NAV_HEADING,NAV_SPEED,NAV_COG
+   tx_vars = DESIRED_HEADING,DESIRED_SPEED,DESIRED_RUDDER,DESIRED_THRUST,TURN_RATE
+   tx_vars = DRIFT_VX,DRIFT_VY,DRIFT_SPEED,DRIFT_DIR
 
    // Optional inbound remap: WIRE_VAR:MOOS_VAR
    // Backseat-side EKF / uBBBundler is the source of truth for
