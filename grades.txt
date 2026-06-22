@@ -13,7 +13,7 @@ Num  Name                    Done (or empty)
 07   Manos Gonidakis         Done 
 08   Kyriakos Alexiou      
 09   Athanasios Dimopoulos   Done
-10   Eleftherios Alifragkis
+10   Eleftherios Alifragkis  Done
 ---  --------------------    ---------------
 11   Konstantinos Voskakis   Done
 12   George Pouraimis        Done
