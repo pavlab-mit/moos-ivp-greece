@@ -15,8 +15,8 @@ ProcessConfig = pDiffThrustPID_v2
 #else
   // BlueBoat (field): fitted cmd ~ 17*v^2
   speed_ff_points = 0,0 : 0.5,4.25 : 1.0,17 : 1.5,38 : 2.0,68 : 2.4,98
-  theta_b         = 30
-  max_yaw_rate    = 30
+  theta_b         = 50
+  max_yaw_rate    = 18
 #endif
 
   speed_ki        = 0
