@@ -1,0 +1,25 @@
+//-----------------------------------------------------
+// pDiffThrustTuner Config Block  (pymoos2 web dashboard:
+// live pDiffThrustPID_v2 tuner + desired/measured scope).
+//
+// Serves a browser dashboard (http://localhost:web_port).
+// "Apply" -> PDIFF_THRUST_UPDATES; reads back PDIFF_THRUST_STATE.
+//
+// Routing for FIELD use (shoreside community):
+//   - publish_suffix = _ALL  so uFldShoreBroker qbridges
+//     PDIFF_THRUST_UPDATES_ALL -> vehicle PDIFF_THRUST_UPDATES
+//   - uFldNodeBroker bridges PDIFF_THRUST_STATE + DESIRED_*/NAV_*/
+//     DESIRED_THRUST_L/R up from the vehicle for the plots
+// For SIM (one MOOSDB) leave publish_suffix empty and connect
+// straight to the vehicle DB (see launch_difftuner.sh).
+//-----------------------------------------------------
+
+ProcessConfig = pDiffThrustTuner
+{
+  AppTick   = 8
+  CommsTick = 8
+
+  web_port       = 8080
+  history        = 90
+  publish_suffix = _ALL     // -> uFldShoreBroker qbridge -> vehicle PDIFF_THRUST_UPDATES
+}

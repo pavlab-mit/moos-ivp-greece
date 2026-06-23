@@ -25,6 +25,11 @@ Processconfig = ANTLER
   Run = uBBPIDTuner     @ NewConsole = false
 #endif
 #endif
+#ifdef CONTROLLER rt
+#ifdef LAUNCH_TUNER yes
+  Run = pDiffThrustTuner @ NewConsole = false
+#endif
+#endif
 }
 
 #include plugs/shared_all/plug_pShare.moos
@@ -41,3 +46,5 @@ Processconfig = ANTLER
 #include plugs/shoreside/plug_uBBPIDTuner.moos
 #endif
 #endif
+// tuner config block always present so a manually-launched tuner finds it
+#include plugs/shoreside/plug_pDiffThrustTuner.moos

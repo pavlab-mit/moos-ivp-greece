@@ -37,6 +37,11 @@ ProcessConfig = uFldNodeBroker
   bridge = src=BBPID_DESIRED_YAWRATE
   bridge = src=BBPID_MEAS_YAWRATE
 
+  // pDiffThrustPID_v2 scope + readback for pDiffThrustTuner (shore).
+  bridge = src=DESIRED_THRUST_L
+  bridge = src=DESIRED_THRUST_R
+  bridge = src=PDIFF_THRUST_STATE
+
 #ifdef MEDIATED yes
   bridge = src=MEDIATED_MESSAGE_LOCAL, alias=MEDIATED_MESSAGE
   bridge = src=ACK_MESSAGE_LOCAL, alias=ACK_MESSAGE
