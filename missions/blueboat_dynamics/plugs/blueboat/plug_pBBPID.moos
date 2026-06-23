@@ -19,6 +19,10 @@ ProcessConfig = pBBPID
   heading_pid = 1.3, 0.2, 0.0     // outer: heading err (deg) -> yaw rate (deg/s)
   yawrate_pid = 4.0, 0.5, 0.0     // inner: yaw-rate err (deg/s) -> rudder
 
+  // Low-pass the desired yaw rate (time const, s; 0=off). The yaw FF gain
+  // dr~10 amplifies des-yaw-rate noise into the rudder FF, so smooth it.
+  des_yawrate_filter = 0.3
+
   // Limits
   max_thrust             = 100
   max_rudder             = 100
@@ -35,13 +39,22 @@ ProcessConfig = pBBPID
   schedule_point = speed=1.5, kp=2.0, ki=0.10, kd=0.0,  max_yawrate=20
   schedule_point = speed=3.0, kp=1.2, ki=0.05, kd=0.2,  max_yawrate=12
 
-  // ----- Feedforward (identified from BlueBoat field logs, bb_dynamics_id.py)
+  // ----- Feedforward (added ahead of the PID; PID corrects the residual)
   //   common c = c0 + cv*v* + crr*r*^2     -> added to DESIRED_THRUST
   //   diff   d = d0 + dr*r* + dvr*v* * r*  -> added to DESIRED_RUDDER (scaled)
   //   v* = desired speed [m/s], r* = desired yaw rate [deg/s]
-  // The PID loops then only correct the residual.
-  ff_speed = 4.428, 4.960, 0.4505     // c0, cv, crr
-  ff_yaw   = -3.420, -6.0653, 8.4952  // d0, dr, dvr  (dvr = v*r coupling)
+  //
+  // ff_yaw: nominal gains from the OPEN-LOOP plant ID (bb_plant_id.py on the
+  //   pDiffThrust dynamics log). Identified G(s)=0.0971/(2.32s+1)e^-0.5s for
+  //   DESIRED_RUDDER -> yaw rate, so dr = 1/K = 10.30 %/(deg/s) and the trim
+  //   d0 = -bias/K = 4.15 cancels the steady yaw offset. dvr=0 (single-model
+  //   fit; the gain schedule covers the speed dependence). NOTE: VAF was 51%
+  //   and implies ~9 deg/s at full rudder vs ~50 observed -> dr may be high
+  //   (over-commands); verify with a dedicated yaw step test.
+  // ff_speed: NOT updated -- speed was not identifiable from that log
+  //   (VAF 5%, current-dominated). Still the prior field-ID values.
+  ff_speed = 4.428, 4.960, 0.4505     // c0, cv, crr  (prior bb_dynamics_id.py)
+  ff_yaw   = 4.145, 10.300, 0.0       // d0, dr, dvr  (bb_plant_id.py plant TF)
 
 #ifdef XMODE SIM
   // ----- Sim: no gyro, derive yaw rate from heading -----
@@ -59,8 +72,8 @@ ProcessConfig = pBBPID
   yawrate_scale   = 57.2958        // VERIFY: rad/s->deg/s; negate if sign flipped
   rudder_polarity = 1              // VERIFY on bench against pThrustMix
   ff_enable        = true
-  // differential-thrust-% -> DESIRED_RUDDER units (via pThrustMix). CALIBRATE:
-  // start at 1.0, adjust so FF alone roughly holds a commanded turn rate.
+  // ff_yaw was identified directly in DESIRED_RUDDER units (the plant ID
+  // included pThrustMix), so this is exactly 1.0 -- no separate calibration.
   ff_rudder_scale  = 1.0
 #endif
 

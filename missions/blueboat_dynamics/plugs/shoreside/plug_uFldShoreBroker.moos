@@ -18,12 +18,11 @@ ProcessConfig = uFldShoreBroker
   qbridge  = COMMS_POLICY
 
   // pBBPID tuning, piped shore->vehicle (km controller only). The tuner
-  // posts e.g. BBPID_SPEED_KP_ALL on shoreside; qbridge delivers
-  // BBPID_SPEED_KP to each vehicle (where pBBPID subscribes).
+  // posts e.g. BBPID_SET_ALL on shoreside; qbridge delivers BBPID_SET to
+  // each vehicle. BBPID_SET carries "key=value" config lines (gains, limits,
+  // filters, FF coeffs); the schedule keeps its own vars (nested '=').
 #ifdef CONTROLLER km
-  qbridge  = BBPID_SPEED_KP, BBPID_SPEED_KI, BBPID_SPEED_KD
-  qbridge  = BBPID_HEADING_KP, BBPID_HEADING_KI, BBPID_HEADING_KD
-  qbridge  = BBPID_YAWRATE_KP, BBPID_YAWRATE_KI, BBPID_YAWRATE_KD
+  qbridge  = BBPID_SET
   qbridge  = BBPID_SCHEDULE_ENABLE, BBPID_SCHEDULE_POINT, BBPID_SCHEDULE_CLEAR
   qbridge  = BBPID_FF_ENABLE
 #endif

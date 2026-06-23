@@ -36,6 +36,7 @@ ProcessConfig = uFldNodeBroker
   bridge = src=DESIRED_HEADING
   bridge = src=BBPID_DESIRED_YAWRATE
   bridge = src=BBPID_MEAS_YAWRATE
+  bridge = src=BBPID_PARAMS_DEFAULT
 
   // pDiffThrustPID_v2 scope + readback for pDiffThrustTuner (shore).
   bridge = src=DESIRED_THRUST_L
