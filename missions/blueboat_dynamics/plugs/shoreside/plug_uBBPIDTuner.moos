@@ -14,6 +14,9 @@
 
 ProcessConfig = uBBPIDTuner
 {
+  AppTick        = 20      // high tick -> smooth GUI (iterate pumps Tk)
+  CommsTick      = 10
+
   history        = 30
   publish_suffix = _ALL
 }
