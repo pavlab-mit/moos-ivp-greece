@@ -2,21 +2,23 @@
 #--------------------------------------------------------------
 #   Script:  launch_difftuner.sh
 #  Mission:  blueboat_dynamics
-#   Opens the pDiffThrustPID_v2 web tuner (pDiffThrustTuner,
-#   a pymoos2 app) connected directly to one MOOSDB. For SIM
-#   no broker/bridges are needed -- the tuner shares the DB
-#   with the controller.
+#   Opens the pDiffThrustPID_v2 web tuner (pDiffThrustTuner, a pymoos2 app).
+#   The tuner is a SHORESIDE app, so it defaults to the shoreside targ
+#   (DB 9000, publish_suffix=_ALL -> qbridge routes updates to the vehicle).
+#   Pass a bare port to instead connect DIRECTLY to a vehicle DB (no bridges,
+#   handy for sim): vehicles start at 9001 (asha), 9002 (bama), ...
 #
-#   Usage:  ./launch_difftuner.sh [PORT] [WEBPORT]
-#     ./launch_difftuner.sh              # DB 9001, web 8080
-#     ./launch_difftuner.sh 9001 8081    # explicit
+#   Usage:  ./launch_difftuner.sh [PORT | targ.moos] [WEBPORT]
+#     ./launch_difftuner.sh                       # shoreside (9000) via targ_shoreside.moos
+#     ./launch_difftuner.sh 9001                  # direct to first vehicle DB
+#     ./launch_difftuner.sh targs/targ_shoreside.moos
 #
 #   Python: set DIFF_PYTHON to a python with pymoos2, else probes.
 #--------------------------------------------------------------
 ME=$(basename "$0")
-ARG="${1:-9001}"          # MOOSDB port (direct/sim) OR a .moos targ (shoreside)
-WEBPORT="${2:-8080}"
 MDIR=$(cd "$(dirname "$0")" && pwd)
+ARG="${1:-$MDIR/targs/targ_shoreside.moos}"   # shoreside targ (9000, _ALL) by default
+WEBPORT="${2:-8080}"
 
 TUNER=""
 for C in \
