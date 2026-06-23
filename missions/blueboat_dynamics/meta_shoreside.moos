@@ -46,6 +46,5 @@ Processconfig = ANTLER
 #include plugs/shoreside/plug_uBBPIDTuner.moos
 #endif
 #endif
-#ifdef CONTROLLER rt
+// tuner config block always present so a manually-launched tuner finds it
 #include plugs/shoreside/plug_pDiffThrustTuner.moos
-#endif

@@ -39,7 +39,11 @@ done
 
 if [ -f "$ARG" ] || [[ "$ARG" == *.moos ]]; then
     TARG="$ARG"                          # shoreside: targ_shoreside.moos carries publish_suffix=_ALL
-    [ -f "$TARG" ] || { echo "$ME: targ not found: $TARG"; exit 1; }
+    [ -f "$TARG" ] || { echo "$ME: targ not found: $TARG -- launch the shoreside first."; exit 1; }
+    grep -q 'ProcessConfig = pDiffThrustTuner' "$TARG" || \
+        echo "$ME: WARNING: $TARG has no pDiffThrustTuner block. Relaunch the shoreside; updates won't route."
+    grep -qE 'publish_suffix[[:space:]]*=[[:space:]]*_ALL' "$TARG" || \
+        echo "$ME: WARNING: publish_suffix is not _ALL in $TARG. Applies will be dropped at the qbridge."
 else
     mkdir -p "$MDIR/targs"
     TARG="$MDIR/targs/targ_difftuner.moos"
