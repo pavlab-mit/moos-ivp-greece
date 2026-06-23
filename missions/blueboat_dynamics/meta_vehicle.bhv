@@ -41,7 +41,7 @@ Behavior = BHV_LegRun
 
   
     // Legrun parameters
-    p1 = -162:-16
+    p1 = -152:-21
     p2 = -89:-62
     turn1_bias = 0
     turn2_bias = 0
