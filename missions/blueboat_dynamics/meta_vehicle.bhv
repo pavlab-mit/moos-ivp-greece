@@ -42,7 +42,7 @@ Behavior = BHV_LegRun
   
     // Legrun parameters
     p1 = -152:-21
-    p2 = -89:-62
+    p2 = -98:-56
     turn1_bias = 0
     turn2_bias = 0
     turn1_dir = port
