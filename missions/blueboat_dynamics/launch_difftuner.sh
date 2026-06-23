@@ -14,7 +14,7 @@
 #   Python: set DIFF_PYTHON to a python with pymoos2, else probes.
 #--------------------------------------------------------------
 ME=$(basename "$0")
-PORT="${1:-9001}"
+ARG="${1:-9001}"          # MOOSDB port (direct/sim) OR a .moos targ (shoreside)
 WEBPORT="${2:-8080}"
 MDIR=$(cd "$(dirname "$0")" && pwd)
 
@@ -35,11 +35,15 @@ for C in "$DIFF_PYTHON" python3 python ; do
 done
 [ -z "$PYBIN" ] && { echo "$ME: no python with pymoos2 found. Set DIFF_PYTHON."; exit 1; }
 
-mkdir -p "$MDIR/targs"
-TARG="$MDIR/targs/targ_difftuner.moos"
-cat > "$TARG" <<EOF
+if [ -f "$ARG" ] || [[ "$ARG" == *.moos ]]; then
+    TARG="$ARG"                          # shoreside: targ_shoreside.moos carries publish_suffix=_ALL
+    [ -f "$TARG" ] || { echo "$ME: targ not found: $TARG"; exit 1; }
+else
+    mkdir -p "$MDIR/targs"
+    TARG="$MDIR/targs/targ_difftuner.moos"
+    cat > "$TARG" <<EOF
 ServerHost = localhost
-ServerPort = $PORT
+ServerPort = $ARG
 Community  = difftuner
 
 ProcessConfig = pDiffThrustTuner
@@ -51,6 +55,7 @@ ProcessConfig = pDiffThrustTuner
   publish_suffix =
 }
 EOF
+fi
 
 ( sleep 1; command -v open >/dev/null 2>&1 && open "http://localhost:$WEBPORT" ) &
 exec "$PYBIN" "$TUNER" "$TARG"

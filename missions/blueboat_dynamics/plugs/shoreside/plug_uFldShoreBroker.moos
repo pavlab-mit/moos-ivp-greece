@@ -28,5 +28,11 @@ ProcessConfig = uFldShoreBroker
   qbridge  = BBPID_FF_ENABLE
 #endif
 
+  // pDiffThrustPID_v2 live tuning: pDiffThrustTuner posts PDIFF_THRUST_UPDATES_ALL
+  // on the shoreside; qbridge delivers PDIFF_THRUST_UPDATES to the vehicle.
+#ifdef CONTROLLER rt
+  qbridge  = PDIFF_THRUST_UPDATES
+#endif
+
 	app_logging = off
 }

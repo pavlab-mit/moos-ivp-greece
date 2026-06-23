@@ -25,6 +25,11 @@ Processconfig = ANTLER
   Run = uBBPIDTuner     @ NewConsole = false
 #endif
 #endif
+#ifdef CONTROLLER rt
+#ifdef LAUNCH_TUNER yes
+  Run = pDiffThrustTuner @ NewConsole = false
+#endif
+#endif
 }
 
 #include plugs/shared_all/plug_pShare.moos
@@ -40,4 +45,7 @@ Processconfig = ANTLER
 #ifdef LAUNCH_TUNER yes
 #include plugs/shoreside/plug_uBBPIDTuner.moos
 #endif
+#endif
+#ifdef CONTROLLER rt
+#include plugs/shoreside/plug_pDiffThrustTuner.moos
 #endif
