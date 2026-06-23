@@ -33,5 +33,9 @@ ProcessConfig = uFldShoreBroker
   // unused) so it can't silently no-op when CONTROLLER isn't passed to the shoreside.
   qbridge  = PDIFF_THRUST_UPDATES
 
+  // desired-speed setpoint from the tuner: LEGRUN_UPDATE_ALL -> vehicle LEGRUN_UPDATE
+  // (BHV_LegRun "updates" var; payload "speed=X").
+  qbridge  = LEGRUN_UPDATE
+
 	app_logging = off
 }
