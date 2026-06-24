@@ -13,6 +13,7 @@
 
 ProcessConfig = iBBNavigatorInterface
 {
+  moos_suicide_phrase = $(VNAME)
   AppTick   = 20
   CommsTick = 20
 

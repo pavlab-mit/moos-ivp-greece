@@ -6,6 +6,7 @@
 
 ProcessConfig = pBB_Status
 {
+  moos_suicide_phrase = $(VNAME)
    AppTick   = 4
    CommsTick = 4
 

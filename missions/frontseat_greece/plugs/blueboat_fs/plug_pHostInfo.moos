@@ -3,6 +3,7 @@
 
 ProcessConfig = pHostInfo
 {
+  moos_suicide_phrase = $(VNAME)
   AppTick 	= 1
   CommsTick = 1
 

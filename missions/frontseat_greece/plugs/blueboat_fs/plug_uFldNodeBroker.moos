@@ -3,6 +3,7 @@
 
 ProcessConfig = uFldNodeBroker
 {
+  moos_suicide_phrase = $(VNAME)
   AppTick   = 2
   CommsTick = 2
 

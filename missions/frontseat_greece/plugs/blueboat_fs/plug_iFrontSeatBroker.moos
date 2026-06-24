@@ -3,6 +3,7 @@
 
 ProcessConfig = iFrontSeatBroker
 {
+  moos_suicide_phrase = $(VNAME)
    AppTick   = 10
    CommsTick = 10
 

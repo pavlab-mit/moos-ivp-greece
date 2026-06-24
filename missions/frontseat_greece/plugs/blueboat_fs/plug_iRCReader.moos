@@ -3,6 +3,7 @@
 	
 ProcessConfig = iRCReader
 {
+  moos_suicide_phrase = $(VNAME)
   AppTick    = 16
   CommsTick  = 16
 

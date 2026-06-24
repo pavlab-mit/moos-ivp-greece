@@ -8,9 +8,14 @@ Community  = $(VNAME)_fs
 ProcessConfig = ANTLER
 {
   MSBetweenLaunches = 100
+  moos_suicide_phrase = $(VNAME)
 
-  //Core vehicle 
-  Run = MOOSDB                 @ NewConsole = false
+  // MOOSDB reads its suicide phrase ONLY from the command line, not the
+  // mission file, so pass it as an extra command-line param via Antler.
+  DB_SUICIDE = --moos_suicide_phrase=$(VNAME)
+
+  //Core vehicle
+  Run = MOOSDB                 @ NewConsole = false,ExtraProcessParams=DB_SUICIDE
   Run = uProcessWatch          @ NewConsole = false
   Run = iRCReader              @ NewConsole = false
   Run = iUnicore               @ NewConsole = false

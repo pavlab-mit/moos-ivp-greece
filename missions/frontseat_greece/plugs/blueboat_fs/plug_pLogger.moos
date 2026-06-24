@@ -3,6 +3,7 @@
 
 ProcessConfig = pLogger
 {
+  moos_suicide_phrase = $(VNAME)
   AppTick 	= 5
   CommsTick = 5
   
