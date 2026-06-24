@@ -53,8 +53,13 @@ ProcessConfig = pBBPID
   //   (over-commands); verify with a dedicated yaw step test.
   // ff_speed: NOT updated -- speed was not identifiable from that log
   //   (VAF 5%, current-dominated). Still the prior field-ID values.
-  ff_speed = 4.428, 4.960, 0.4505     // c0, cv, crr  (prior bb_dynamics_id.py)
-  ff_yaw   = 4.145, 10.300, 0.0       // d0, dr, dvr  (bb_plant_id.py plant TF)
+  // ff_speed = 4.428, 4.960, 0.4505     // c0, cv, crr  (prior bb_dynamics_id.py)
+  // ff_yaw   = 4.145, 10.300, 0.0       // d0, dr, dvr  (bb_plant_id.py plant TF)
+  // ff_speed        = 0, 15, -0.05
+  // ff_yaw          = 0.8, 2, 0
+  ff_speed        = 20, 15, -0.05
+  ff_yaw          = 2.5806, 4.1129, 0
+
 
 #ifdef XMODE SIM
   // ----- Sim: no gyro, derive yaw rate from heading -----
@@ -66,10 +71,18 @@ ProcessConfig = pBBPID
   ff_enable        = true
   ff_rudder_scale  = 1.0
 #else
-  // ----- Real boat: gyro feedback from the IMU -----
-  yawrate_source  = external
-  nav_yawrate_var = GYRO_Z_LVL_IMU
-  yawrate_scale   = 57.2958        // VERIFY: rad/s->deg/s; negate if sign flipped
+  // ----- Real boat -----
+  // GYRO_Z_LVL_IMU is a leveled/near-dead signal in the field logs (std
+  // ~0.85 deg/s) and may not reach the backseat community at all -> pBBPID
+  // would stall in hold-off (no yaw-rate feedback) and never publish its
+  // yaw-rate telemetry or thrust/rudder. So derive yaw rate from NAV_HEADING
+  // (always present), same as SIM. If you have a VERIFIED live yaw-rate var
+  // in pBBPID's community (e.g. TURN_RATE, already deg/s), prefer:
+  //     yawrate_source = external
+  //     nav_yawrate_var = TURN_RATE
+  //     yawrate_scale   = 1.0
+  yawrate_source = derive_heading
+  yawrate_filter = 0.3             // LPF weight on the fresh d(hdg)/dt sample
   rudder_polarity = 1              // VERIFY on bench against pThrustMix
   ff_enable        = true
   // ff_yaw was identified directly in DESIRED_RUDDER units (the plant ID
