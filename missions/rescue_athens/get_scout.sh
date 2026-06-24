@@ -36,25 +36,25 @@ if [[ "${VAPP}" == *"kostas"* ]]; then
     echo "$ROOT_DIR/20-moos-ivp-vasileios2/lib"
 
 elif [[ "${VAPP}" == *"vagsgr"* ]]; then
-    echo "$ROOT_DIR/15-moos-ivp-gkarolos"
+    echo "$ROOT_DIR/15-moos-ivp-gkarolos/lib"
 
 elif [[ "${VAPP}" == *"xeqtor"* ]]; then
-    echo "$ROOT_DIR/07-moos-ivp-goni"
+    echo "$ROOT_DIR/07-moos-ivp-goni/lib"
 
 elif [[ "${VAPP}" == *"kosCharisis"* ]]; then
-    echo "$ROOT_DIR/05-moos-ivp-kosCharisis"
+    echo "$ROOT_DIR/05-moos-ivp-kosCharisis/lib"
 
 elif [[ "${VAPP}" == *"stathes1"* ]]; then
-    echo "$ROOT_DIR/21-moos-ivp-nikosspap"
+    echo "$ROOT_DIR/21-moos-ivp-nikosspap/lib"
     
 elif [[ "${VAPP}" == *"jjacke13"* ]]; then
-    echo "$ROOT_DIR/03-moos-ivp-geochrys"
+    echo "$ROOT_DIR/03-moos-ivp-geochrys/lib"
     
 elif [[ "${VAPP}" == *"GeorgeDimitropoulos"* ]]; then
-    echo "$ROOT_DIR/"
+    echo "$ROOT_DIR/23-moos-ivp-iliaspantazopoulos/lib"
 
 elif [[ "${VAPP}" == *"dkoupats"* ]]; then
-    echo "$ROOT_DIR/08-moos-ivp-k2017"
+    echo "$ROOT_DIR/08-moos-ivp-k2017/lib"
     
     
 fi
