@@ -14,19 +14,25 @@ ProcessConfig = pBBPID
   AppTick    = 16
   CommsTick  = 16
 
+  // UNITS: the yaw-rate path is in RADIANS / rad/s (heading error is converted
+  // to rad internally). Gains below were rescaled from the old deg/s tuning to
+  // preserve identical behavior: rate gains x57.296, crr x57.296^2 (=3282.8),
+  // max_yawrate x0.017453. heading_pid, filters, limits, and FF offsets
+  // (c0/cv/d0) are unit-invariant and unchanged.
+
   // Gains:  param = Kp, Ki, Kd
-  speed_pid   = 3.0, 0.5, 0.0     // thrust per (m/s) of speed error
-  heading_pid = 1.3, 0.2, 0.0     // outer: heading err (deg) -> yaw rate (deg/s)
-  yawrate_pid = 4.0, 0.5, 0.0     // inner: yaw-rate err (deg/s) -> rudder
+  speed_pid   = 3.0, 0.5, 0.0       // thrust per (m/s) of speed error
+  heading_pid = 1.3, 0.2, 0.0       // outer: heading err (rad) -> yaw rate (rad/s)
+  yawrate_pid = 229.18, 28.648, 0.0 // inner: yaw-rate err (rad/s) -> rudder
 
   // Low-pass the desired yaw rate (time const, s; 0=off). The yaw FF gain
-  // dr~10 amplifies des-yaw-rate noise into the rudder FF, so smooth it.
+  // dr amplifies des-yaw-rate noise into the rudder FF, so smooth it.
   des_yawrate_filter = 0.3
 
   // Limits
   max_thrust             = 100
   max_rudder             = 100
-  max_yawrate            = 25      // deg/s default cap (overridden by schedule)
+  max_yawrate            = 0.43633  // rad/s cap (=25 deg/s; overridden by schedule)
   // Speed integral must be able to supply the full steady thrust to hold a
   // commanded speed (P contributes 0 at zero error), so cap it at max_thrust.
   speed_integral_limit   = 100
@@ -34,15 +40,16 @@ ProcessConfig = pBBPID
 
   // Speed-scheduled yaw-rate gains (linearly interpolated on NAV_SPEED):
   // turn hard at low speed, ease off as the deep hull resists at speed.
+  // (rad/s units: kp/ki/kd x57.296, max_yawrate x0.017453)
   enable_gain_schedule = true
-  schedule_point = speed=0.5, kp=3.0, ki=0.10, kd=0.0,  max_yawrate=30
-  schedule_point = speed=1.5, kp=2.0, ki=0.10, kd=0.0,  max_yawrate=20
-  schedule_point = speed=3.0, kp=1.2, ki=0.05, kd=0.2,  max_yawrate=12
+  schedule_point = speed=0.5, kp=171.89, ki=5.7296, kd=0.0,    max_yawrate=0.5236
+  schedule_point = speed=1.5, kp=114.59, ki=5.7296, kd=0.0,    max_yawrate=0.34907
+  schedule_point = speed=3.0, kp=68.755, ki=2.8648, kd=11.459, max_yawrate=0.20944
 
   // ----- Feedforward (added ahead of the PID; PID corrects the residual)
   //   common c = c0 + cv*v* + crr*r*^2     -> added to DESIRED_THRUST
   //   diff   d = d0 + dr*r* + dvr*v* * r*  -> added to DESIRED_RUDDER (scaled)
-  //   v* = desired speed [m/s], r* = desired yaw rate [deg/s]
+  //   v* = desired speed [m/s], r* = desired yaw rate [rad/s]
   //
   // ff_yaw: nominal gains from the OPEN-LOOP plant ID (bb_plant_id.py on the
   //   pDiffThrust dynamics log). Identified G(s)=0.0971/(2.32s+1)e^-0.5s for
@@ -55,10 +62,15 @@ ProcessConfig = pBBPID
   //   (VAF 5%, current-dominated). Still the prior field-ID values.
   // ff_speed = 4.428, 4.960, 0.4505     // c0, cv, crr  (prior bb_dynamics_id.py)
   // ff_yaw   = 4.145, 10.300, 0.0       // d0, dr, dvr  (bb_plant_id.py plant TF)
-  // ff_speed        = 0, 15, -0.05
-  // ff_yaw          = 0.8, 2, 0
-  ff_speed        = 20, 15, -0.05
-  ff_yaw          = 2.5806, 4.1129, 0
+  // (rad/s units: crr x3282.8, dr x57.296; c0/cv/d0 unit-invariant)
+  // ff_speed (deg/s) was 20, 15, -0.05 ;  ff_yaw was 2.5806, 4.1129, 0
+  ff_speed        = 20, 15, -164.14
+  ff_yaw          = 2.5806, 235.65, 0
+
+  // Per-axis FF toggles (live via the tuner): isolate the speed (thrust) or
+  // yaw (rudder) FF term without touching the master ff_enable.
+  ff_speed_enable = true
+  ff_yaw_enable   = true
 
 
 #ifdef XMODE SIM
@@ -77,10 +89,11 @@ ProcessConfig = pBBPID
   // would stall in hold-off (no yaw-rate feedback) and never publish its
   // yaw-rate telemetry or thrust/rudder. So derive yaw rate from NAV_HEADING
   // (always present), same as SIM. If you have a VERIFIED live yaw-rate var
-  // in pBBPID's community (e.g. TURN_RATE, already deg/s), prefer:
+  // in pBBPID's community, prefer external feedback. The controller now wants
+  // rad/s, so set yawrate_scale to convert the source to rad/s:
   //     yawrate_source = external
-  //     nav_yawrate_var = TURN_RATE
-  //     yawrate_scale   = 1.0
+  //     nav_yawrate_var = TURN_RATE   // (deg/s)  -> yawrate_scale = 0.017453
+  //  or nav_yawrate_var = GYRO_Z_LVL_IMU if it is rad/s -> yawrate_scale = 1.0
   yawrate_source = derive_heading
   yawrate_filter = 0.3             // LPF weight on the fresh d(hdg)/dt sample
   rudder_polarity = 1              // VERIFY on bench against pThrustMix
