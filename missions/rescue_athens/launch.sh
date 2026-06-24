@@ -281,8 +281,8 @@ do
 	IVARGS+=" --vuser=${VUSER} "
 
 	LOGLINE+="user=$VUSER "
-	#BHV_DIR=`./get_scout.sh $VAPP`
-	#AIVARGS+=" --bdir=${BHV_DIR} "
+	BHV_DIR=`./get_scout.sh $VAPP`
+	IVARGS+=" --bdir=${BHV_DIR} "
     fi
 
     if [ "$LOGLINE" != "" ]; then
