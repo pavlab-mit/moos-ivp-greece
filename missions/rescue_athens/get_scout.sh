@@ -30,7 +30,7 @@ done
 #-------------------------------------------------------
 #  Part 2: Do the cleaning!
 #-------------------------------------------------------
-ROOT_DIR="/Users/mikerb/Research/autotest/harnesses_athens"
+ROOT_DIR="/Users/mikerb/Research/autotest/harness_athens"
 
 if [[ "${VAPP}" == *"kostas"* ]]; then
     echo "$ROOT_DIR/20-moos-ivp-vasileios2/lib"
