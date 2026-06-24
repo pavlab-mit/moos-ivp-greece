@@ -229,8 +229,8 @@ Behavior = BHV_OpRegionV24
   visual_hints = save_edge_color = gray30
   visual_hints = halt_edge_color = gray40
 	
-	save_dist = 1
-	halt_dist = 5
+	save_dist = 3
+	halt_dist = 15
 
 	recover_spd = 0.6
 }
