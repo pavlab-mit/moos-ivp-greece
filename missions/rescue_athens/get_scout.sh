@@ -42,7 +42,7 @@ elif [[ "${VAPP}" == *"xeqtor"* ]]; then
     echo "$ROOT_DIR/07-moos-ivp-goni/lib"
 
 elif [[ "${VAPP}" == *"kosCharisis"* ]]; then
-    echo "$ROOT_DIR/05-moos-ivp-johngior/lib"
+    echo "$ROOT_DIR/17-moos-ivp-johngior/lib"
 
 elif [[ "${VAPP}" == *"stathes1"* ]]; then
     echo "$ROOT_DIR/21-moos-ivp-nikosspap/lib"
