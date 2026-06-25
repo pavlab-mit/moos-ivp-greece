@@ -153,6 +153,7 @@ if [ "${XMODE}" = "" ]; then
     FSEAT_IP=`get_robot_info_greece.sh --fseat`
     VNAME=`get_robot_info_greece.sh --name`
     XMODE=`get_robot_info_greece.sh --TYPE`
+    RETURN_POS=`get_robot_info_greece.sh --return`
     if [ "$XMODE" = "" -o "$IP_ADDR" = "localhost" ]; then
 	echo "$ME: Problem getting Robot Info. Exit Code 2"
 	exit 2
@@ -240,7 +241,7 @@ nsplug meta_vehicle.bhv targ_$VNAME.bhv $NSFLAGS         \
        STOCK_SPD=$STOCK_SPD                              \
        COLOR=$COLOR                 VROLE=$VROLE         \
        AUTO_LAUNCHED=$AUTO_LAUNCHED                      \
-       TMATE=$TMATE
+       TMATE=$TMATE                 RETURN_POS=$RETURN_POS     \
 
 if [ "${JUST_MAKE}" = "yes" ]; then
     echo "$ME: Targ files made; exiting without launch."

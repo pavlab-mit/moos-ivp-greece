@@ -207,7 +207,7 @@ Behavior = BHV_Waypoint
   capture_radius = 4.0
      slip_radius = 12.0
 
-	point = start
+	point = $(RETURN_POS)
 
      visual_hints = vertex_size  = 4             // default
      visual_hints = vertex_color = dodger_blue   // default
