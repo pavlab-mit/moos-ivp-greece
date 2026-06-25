@@ -6,3 +6,5 @@
 /Users/mikerb/Research/autotest/harness_athens/01-moos-ivp-jjacke13/bin/pGenRescue
 /Users/mikerb/Research/autotest/harness_athens/24-moos-ivp-GeorgeDimitropoulos/bin/pGenRescue
 /Users/mikerb/Research/autotest/harness_athens/04-moos-ivp-dkoupats/bin/pGenRescue
+/Users/mikerb/Research/autotest/harness_athens/09-moos-ivp-dimotha/bin/pGenRescue
+
