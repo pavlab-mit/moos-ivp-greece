@@ -107,26 +107,30 @@ IP_ADDR=`hostname -I | cut -d ' ' -f 1`
 #---------------------------------------------------------------
 # Part 3: Match IP address to BlueBoat name
 #---------------------------------------------------------------
+
+#ASHA AND EWAN FOR GREEN 
+#BAMA AND CHIP FOR ORANGE
+
 if [ "${IP_ADDR}" = "10.31.1.100" ]; then
     VNAME="asha";
     FSEAT="10.31.1.1"
     RADIO_IP="10.31.3.2"
     VEHICLE_TYPE=$BBOAT
-    COLOR="coral"
+    COLOR="green"
     RPOINT="-16,-13"
 elif [ "${IP_ADDR}" = "10.32.1.100" ]; then
     VNAME="bama";
     FSEAT="10.32.1.1"
     RADIO_IP="10.32.3.2"
     VEHICLE_TYPE=$BBOAT
-    COLOR="darkred"
+    COLOR="orange"
     RPOINT="-20,-17.2"
 elif [ "${IP_ADDR}" = "10.33.1.100" ]; then
     VNAME="chip";
     FSEAT="10.33.1.1"
     RADIO_IP="10.33.3.2"
     VEHICLE_TYPE=$BBOAT
-    COLOR="limegreen"
+    COLOR="orange"
     RPOINT="-24,-21.4"
 elif [ "${IP_ADDR}" = "10.34.1.100" ]; then
     VNAME="dale";
@@ -140,7 +144,7 @@ elif [ "${IP_ADDR}" = "10.35.1.100" ]; then
     FSEAT="10.35.1.1"
     RADIO_IP="10.35.3.2"
     VEHICLE_TYPE=$BBOAT
-    COLOR="tan"
+    COLOR="green"
     RPOINT="-32,-29.8"
 elif [ "${IP_ADDR}" = "10.36.1.100" ]; then
     VNAME="flex";
